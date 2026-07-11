@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: moviedb
+  datasource:
+    url: jdbc:h2:mem:moviedb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: false
+  graphql:
+    graphiql:
+      enabled: true
+    websocket:
+      path: /graphql
+    cors:
+      allowed-origins: http://localhost:5173
+      allow-credentials: true
+  threads:
+    virtual:
+      enabled: true
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000
+demo:
+  # Artificial resolver latency for demoing batching / parallel field fetching. 0 = no delay.
+  latency: 1s
+tmdb:
+  # API Read Access Token (v4); empty fallback keeps the app fully usable without a key
+  api-key: ${TMDB_API_KEY:}
+  base-url: https://api.themoviedb.org/3
+  image-base-url: https://image.tmdb.org/t/p/w500
+graphql:
+  # Instrumentation configuration
+  # 15, not 10: the standard introspection query is depth 13, so anything lower
+  # breaks GraphiQL docs/autocomplete and codegen tooling.
+  max-query-depth: 15
+  slow-resolver-threshold-ms: 100
