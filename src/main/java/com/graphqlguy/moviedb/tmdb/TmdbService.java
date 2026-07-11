@@ -1,8 +1,8 @@
 package com.graphqlguy.moviedb.tmdb;
 
 import com.github.benmanes.caffeine.cache.Cache;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -19,9 +19,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class TmdbService {
+
+    private static final Logger log = LoggerFactory.getLogger(TmdbService.class);
 
     private final TmdbProperties tmdbProperties;
     private final Cache<Integer, CommunityRating> ratingCache;
@@ -30,6 +30,11 @@ public class TmdbService {
     private final RestClient restClient = RestClient.builder()
             .requestFactory(timeoutRequestFactory())
             .build();
+
+    public TmdbService(final TmdbProperties tmdbProperties, final Cache<Integer, CommunityRating> ratingCache) {
+        this.tmdbProperties = tmdbProperties;
+        this.ratingCache = ratingCache;
+    }
 
     private static JdkClientHttpRequestFactory timeoutRequestFactory() {
         JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(

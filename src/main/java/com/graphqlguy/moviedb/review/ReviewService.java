@@ -10,13 +10,11 @@ import com.graphqlguy.moviedb.tvshow.TvShow;
 import com.graphqlguy.moviedb.tvshow.TvShowRepository;
 import com.graphqlguy.moviedb.user.AppUser;
 import com.graphqlguy.moviedb.user.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ReviewService {
 
@@ -25,6 +23,14 @@ public class ReviewService {
     private final TvShowRepository tvShowRepository;
     private final UserRepository userRepository;
     private final LatencySimulator latencySimulator;
+
+    public ReviewService(final ReviewRepository reviewRepository, final MovieRepository movieRepository,
+                         final TvShowRepository tvShowRepository, final UserRepository userRepository, final LatencySimulator latencySimulator) {
+        this.reviewRepository = reviewRepository;
+        this.movieRepository = movieRepository;
+        this.tvShowRepository = tvShowRepository;
+        this.userRepository = userRepository;        this.latencySimulator = latencySimulator;
+    }
 
     @Transactional
     public Review createReview(CreateReviewInput input, String username) {
