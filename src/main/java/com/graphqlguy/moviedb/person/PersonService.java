@@ -11,9 +11,9 @@ import com.graphqlguy.moviedb.tvshow.TvShow;
 import com.graphqlguy.moviedb.tvshow.TvShowCast;
 import com.graphqlguy.moviedb.tvshow.TvShowCastRepository;
 import com.graphqlguy.moviedb.tvshow.TvShowRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,11 +28,11 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PersonService {
+
+    private static final Logger log = LoggerFactory.getLogger(PersonService.class);
 
     private final PersonRepository personRepository;
     private final MovieCastRepository movieCastRepository;
@@ -41,6 +41,17 @@ public class PersonService {
     private final TvShowRepository tvShowRepository;
     private final LatencySimulator latencySimulator;
 
+
+    public PersonService(final PersonRepository personRepository, final MovieCastRepository movieCastRepository,
+                         final MovieRepository movieRepository, final TvShowCastRepository tvShowCastRepository,
+                         final TvShowRepository tvShowRepository,
+                           final LatencySimulator latencySimulator) {
+        this.personRepository = personRepository;
+        this.movieCastRepository = movieCastRepository;
+        this.movieRepository = movieRepository;
+        this.tvShowCastRepository = tvShowCastRepository;
+        this.tvShowRepository = tvShowRepository;        this.latencySimulator = latencySimulator;
+    }
 
     @Transactional
     Person createPerson(final CreatePersonInput input) {

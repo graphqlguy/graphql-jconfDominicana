@@ -5,8 +5,8 @@ import com.graphqlguy.moviedb.exception.EntityNotFoundException;
 import com.graphqlguy.moviedb.person.Person;
 import com.graphqlguy.moviedb.review.ReviewRepository;
 import com.graphqlguy.moviedb.shared.SortOrder;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,15 +17,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.function.Consumer;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MovieService {
+
+    private static final Logger log = LoggerFactory.getLogger(MovieService.class);
 
     private final MovieRepository movieRepository;
     private final ReviewRepository reviewRepository;
     private final LatencySimulator latencySimulator;
+
+    public MovieService(final MovieRepository movieRepository, final ReviewRepository reviewRepository, final LatencySimulator latencySimulator) {
+        this.movieRepository = movieRepository;
+        this.reviewRepository = reviewRepository;        this.latencySimulator = latencySimulator;
+    }
 
 
     List<Movie> findAll() {

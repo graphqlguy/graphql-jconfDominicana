@@ -18,8 +18,8 @@ import com.graphqlguy.moviedb.user.AppUser;
 import com.graphqlguy.moviedb.user.Role;
 import com.graphqlguy.moviedb.user.UserRepository;
 import com.graphqlguy.moviedb.shared.Genre;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,9 +28,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 
 @Configuration
-@RequiredArgsConstructor
-@Slf4j
 public class DataInitializer {
+
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     private final MovieRepository movieRepo;
     private final PersonRepository personRepo;
@@ -41,6 +41,22 @@ public class DataInitializer {
     private final UserRepository userRepo;
     private final ReviewRepository reviewRepo;
     private final PasswordEncoder passwordEncoder;
+
+    public DataInitializer(final MovieRepository movieRepo, final PersonRepository personRepo,
+                           final MovieCastRepository movieCastRepo, final TvShowRepository tvShowRepo,
+                           final TvShowCastRepository tvShowCastRepo, final EpisodeRepository episodeRepo,
+                           final UserRepository userRepo, final ReviewRepository reviewRepo,
+                           final PasswordEncoder passwordEncoder) {
+        this.movieRepo = movieRepo;
+        this.personRepo = personRepo;
+        this.movieCastRepo = movieCastRepo;
+        this.tvShowRepo = tvShowRepo;
+        this.tvShowCastRepo = tvShowCastRepo;
+        this.episodeRepo = episodeRepo;
+        this.userRepo = userRepo;
+        this.reviewRepo = reviewRepo;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     private static final String BASE = "https://image.tmdb.org/t/p/w500/";
 

@@ -3,19 +3,25 @@ package com.graphqlguy.moviedb.user;
 import com.graphqlguy.moviedb.config.LatencySimulator;
 import com.graphqlguy.moviedb.exception.InvalidInputException;
 import com.graphqlguy.moviedb.security.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final LatencySimulator latencySimulator;
+
+    public UserService(final UserRepository userRepository, final PasswordEncoder passwordEncoder,
+                       final JwtUtil jwtUtil,
+                       final LatencySimulator latencySimulator) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;        this.latencySimulator = latencySimulator;
+    }
 
     @Transactional(readOnly = true)
     public AuthResponse login(LoginInput input) {

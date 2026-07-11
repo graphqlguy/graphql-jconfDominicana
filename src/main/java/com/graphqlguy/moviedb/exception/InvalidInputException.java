@@ -1,8 +1,5 @@
 package com.graphqlguy.moviedb.exception;
 
-import lombok.Getter;
-
-@Getter
 public class InvalidInputException extends RuntimeException {
 
     private final String field;
@@ -10,5 +7,9 @@ public class InvalidInputException extends RuntimeException {
     public InvalidInputException(String field,  String message) {
         super(message);
         this.field = field;
+    }
+
+    public String getField() {
+        return field;
     }
 }

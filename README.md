@@ -11,6 +11,8 @@ Companion repository for the hands-on workshop at **[JConf Dominicana](https://j
 
 The application we build is **MovieDB**: a movie and TV database with people, reviews, and search. The Spring Boot scaffolding (JPA entities, seed data, services) and the React frontend are already in place; the GraphQL API is what we add, live, over the course of the workshop.
 
+This is the **Lombok-free** variant of the starter: identical to `main`, but with all getters, setters, constructors, builders, and loggers written out as plain Java. Use it if you can't (or don't want to) set up Lombok in your IDE.
+
 ## What We'll Cover
 
 Topics include:

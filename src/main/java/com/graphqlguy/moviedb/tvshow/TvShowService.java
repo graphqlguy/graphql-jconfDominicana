@@ -1,10 +1,10 @@
 package com.graphqlguy.moviedb.tvshow;
 
 import com.graphqlguy.moviedb.config.LatencySimulator;
-import com.graphqlguy.moviedb.person.Person;
 import com.graphqlguy.moviedb.exception.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.graphqlguy.moviedb.person.Person;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,16 +16,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class TvShowService {
+
+    private static final Logger log = LoggerFactory.getLogger(TvShowService.class);
 
     private final TvShowRepository tvShowRepository;
     private final TvShowCastRepository tvShowCastRepository;
     private final EpisodeRepository episodeRepository;
     private final LatencySimulator latencySimulator;
+
+    public TvShowService(final TvShowRepository tvShowRepository, final TvShowCastRepository tvShowCastRepository,
+                         final EpisodeRepository episodeRepository, final LatencySimulator latencySimulator) {
+        this.tvShowRepository = tvShowRepository;
+        this.tvShowCastRepository = tvShowCastRepository;
+        this.episodeRepository = episodeRepository;
+        this.latencySimulator = latencySimulator;
+    }
 
     public TvShow findById(Long id) {
         latencySimulator.pause();

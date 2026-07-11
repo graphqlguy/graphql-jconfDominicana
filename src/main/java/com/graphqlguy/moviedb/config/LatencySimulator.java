@@ -1,6 +1,5 @@
 package com.graphqlguy.moviedb.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -14,10 +13,13 @@ import java.time.Duration;
  * can later be backed by a real slow HTTP call (e.g. a WireMock stub) without touching callers.
  */
 @Component
-@RequiredArgsConstructor
 public class LatencySimulator {
 
     private final DemoProperties demoProperties;
+
+    public LatencySimulator(final DemoProperties demoProperties) {
+        this.demoProperties = demoProperties;
+    }
 
     /** Blocks the current thread for the configured latency; a zero/negative duration is a no-op. */
     public void pause() {
