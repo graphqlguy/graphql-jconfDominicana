@@ -30,6 +30,11 @@ public class PersonController {
         return personService.findAll(page != null ? page : 0, size != null ? size : 20);
     }
 
+    @QueryMapping
+    List<Person> searchPeople(@Argument String name) {
+        return personService.searchByName(name);
+    }
+
     @BatchMapping
     Map<Movie, List<Person>> directors(List<Movie> movies) {
         List<Long> movieIds = movies.stream().map(Movie::getId).toList();

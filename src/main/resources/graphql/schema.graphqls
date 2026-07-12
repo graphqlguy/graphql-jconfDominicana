@@ -10,9 +10,15 @@ type Query {
     movie(id: ID!): Movie
     movies(filter: MovieFilter, page: Int = 0, size: Int = 10, sort: MovieSort): MoviePage!
     moviesByIds(ids: [ID!]!): [Movie]
+    searchMovies(title: String!): [Movie]
     people(page: Int = 0, size: Int = 20): PersonPage!
     person(id: ID!): Person
+    searchPeople(name: String!): [Person!]!
+    search(query: String!): [SearchResult!]!
 }
+
+"""Union of Movie and Person for cross-type search"""
+union SearchResult = Movie | Person
 
 """
     Custom Movie type

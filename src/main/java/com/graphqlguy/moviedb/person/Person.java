@@ -1,5 +1,6 @@
 package com.graphqlguy.moviedb.person;
 
+import com.graphqlguy.moviedb.shared.SearchResult;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +18,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Person {
+public class Person implements SearchResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
