@@ -37,6 +37,11 @@ public class MovieController {
     }
 
     @QueryMapping
+    List<Movie> searchMovies(@Argument String title) {
+        return movieService.searchByTitle(title);
+    }
+
+    @QueryMapping
     public DataFetcherResult<List<Movie>> moviesByIds(@Argument List<Long> ids, DataFetchingEnvironment env) {
         List<Movie> found = movieService.findByIds(ids);
         Set<Long> foundIds = found.stream().map(Movie::getId).collect(Collectors.toSet());
