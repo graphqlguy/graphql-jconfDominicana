@@ -29,6 +29,8 @@ type Movie {
     posterUrl: String
     "The Movie Database (TMDB) external identifier"
     tmdbId: Int
+    directors: [Person!]!
+    cast: [MovieCast!]!
 }
 
 enum Genre {
@@ -101,4 +103,16 @@ type Person {
     biography: String
     """Portrait image URL (TMDB)"""
     photoUrl: String
+    """Movies this person directed"""
+    directedMovies: [Movie!]!
+    """This person's acting credits in movies"""
+    movieCastCredits: [MovieCast!]!
+}
+
+
+type MovieCast {
+    id: ID!
+    characterName: String!
+    person: Person!
+    movie: Movie!
 }
