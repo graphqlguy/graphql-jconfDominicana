@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.graphql.data.ArgumentValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +59,7 @@ public class PersonService {
         latencySimulator.pause();
         log.debug("Updating person {}", input);
 
-        if (input.name() != null && StringUtils.isBlank(input.name())) {
+        if (!input.name().isOmitted() && StringUtils.isBlank(input.name().value())) {
             throw new InvalidInputException("name", "Name can't be blank");
         }
 
@@ -69,15 +70,23 @@ public class PersonService {
 
         final Person person = personOptional.get();
         applyIfPresent(input.name(), person::setName);
-        applyIfPresent(input.birthYear(), person::setBirthYear);
-        applyIfPresent(input.countryCode(), person::setCountryCode);
+        applyIfProvided(input.birthYear(), person::setBirthYear);
+        applyIfProvided(input.countryCode(), person::setCountryCode);
 
         return personRepository.save(person);
     }
 
-    private <T> void applyIfPresent(final T value, final Consumer<T> setter) {
-        if (value != null) {
-            setter.accept(value);
+    // Required fields: a provided value replaces the old one; null or omitted leaves it unchanged.
+    private <T> void applyIfPresent(final ArgumentValue<T> arg, final Consumer<T> setter) {
+        if (arg.isPresent()) {
+            setter.accept(arg.value());
+        }
+    }
+
+    // Optional fields: an explicit null clears the value; an omitted field leaves it unchanged.
+    private <T> void applyIfProvided(final ArgumentValue<T> arg, final Consumer<T> setter) {
+        if (!arg.isOmitted()) {
+            setter.accept(arg.value());
         }
     }
 

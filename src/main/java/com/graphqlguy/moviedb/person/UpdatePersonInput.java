@@ -1,9 +1,10 @@
 package com.graphqlguy.moviedb.person;
 
-// Partial-update input: null means "leave the field unchanged".
+import org.springframework.graphql.data.ArgumentValue;
+
 public record UpdatePersonInput(
         Long id,
-        String name,
-        Integer birthYear,
-        String countryCode) {
+        ArgumentValue<String> name,
+        ArgumentValue<Integer> birthYear,
+        ArgumentValue<String> countryCode) {
 }

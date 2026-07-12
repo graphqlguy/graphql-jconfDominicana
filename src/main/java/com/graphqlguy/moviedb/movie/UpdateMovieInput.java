@@ -1,16 +1,16 @@
 package com.graphqlguy.moviedb.movie;
 
 import com.graphqlguy.moviedb.shared.Genre;
+import org.springframework.graphql.data.ArgumentValue;
 
-// Partial-update input: null means "leave the field unchanged".
 public record UpdateMovieInput(
         Long id,
-        String title,
-        Integer releaseYear,
-        Genre genre,
-        Double rating,
-        Integer runtime,
-        String plot,
-        String posterUrl,
-        Integer tmdbId) {
+        ArgumentValue<String> title,
+        ArgumentValue<Integer> releaseYear,
+        ArgumentValue<Genre> genre,
+        ArgumentValue<Double> rating,
+        ArgumentValue<Integer> runtime,
+        ArgumentValue<String> plot,
+        ArgumentValue<String> posterUrl,
+        ArgumentValue<Integer> tmdbId) {
 }
