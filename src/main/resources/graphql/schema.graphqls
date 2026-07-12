@@ -6,6 +6,7 @@ type Query {
     moviesAll: [Movie!]! @deprecated(reason: "Unbounded. Use 'movies' instead.")
     movie(id: ID!): Movie
     movies(filter: MovieFilter, page: Int = 0, size: Int = 10, sort: MovieSort): MoviePage!
+    moviesByIds(ids: [ID!]!): [Movie]
     people(page: Int = 0, size: Int = 20): PersonPage!
     person(id: ID!): Person
 }
@@ -170,8 +171,13 @@ type DeleteMovieResponse {
 
 type DeletePersonResponse {
     success: Boolean!
-    error: String
+    error: DeletePersonError
     deletedId: String
+}
+
+enum DeletePersonError {
+    LINKED_TO_MOVIE
+    LINKED_TO_TV_SHOW
 }
 
 """Input for creating a movie."""
