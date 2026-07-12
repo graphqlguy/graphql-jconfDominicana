@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.ArgumentValue;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +76,7 @@ public class MovieService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     Movie createMovie(final CreateMovieInput input) {
         latencySimulator.pause();
         log.info("Creating movie {}", input.title());
@@ -86,6 +88,7 @@ public class MovieService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     Movie updateMovie(final UpdateMovieInput input) {
         latencySimulator.pause();
         log.info("Updating movie {}", input.id());
@@ -119,6 +122,7 @@ public class MovieService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     DeleteMovieResponse deleteMovie(final Long id) {
         latencySimulator.pause();
         log.info("Delete movie with id {}", id);

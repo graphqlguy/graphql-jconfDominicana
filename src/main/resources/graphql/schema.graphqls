@@ -117,6 +117,22 @@ type MovieCast {
     movie: Movie!
 }
 
+type AuthResponse {
+    token: String!
+    user: User!
+}
+
+type User {
+    id: ID!
+    username: String!
+    email: String
+    role: Role!
+}
+
+enum Role {
+    USER,
+    ADMIN
+}
 
 type Mutation {
     deleteMovie(id: ID!): DeleteMovieResponse!
@@ -126,6 +142,22 @@ type Mutation {
     updateMovie(input: UpdateMovieInput!): Movie!
     createPerson(input: CreatePersonInput!): Person!
     updatePerson(input: UpdatePersonInput!): Person!
+    login(input: LoginInput!): AuthResponse!
+    """Create a new USER account and sign in immediately"""
+    register(input: RegisterInput!): AuthResponse!
+}
+
+
+input LoginInput {
+    username: String!
+    password: String!
+}
+
+"""Input for creating an account; field rules enforced by validation directives"""
+input RegisterInput {
+    username: String
+    email: String
+    password: String
 }
 
 """Result of deleting a movie."""
