@@ -1,0 +1,104 @@
+
+
+# The single entry point of our API. This line is a comment, by the way:
+# comments start with # and are only for people reading this file.
+type Query {
+    moviesAll: [Movie!]! @deprecated(reason: "Unbounded. Use 'movies' instead.")
+    movie(id: ID!): Movie
+    movies(filter: MovieFilter, page: Int = 0, size: Int = 10, sort: MovieSort): MoviePage!
+    people(page: Int = 0, size: Int = 20): PersonPage!
+    person(id: ID!): Person
+}
+
+"""
+    Custom Movie type
+    All movie details are taken from the The Movie Database (TMDB)
+    Triple quotes allow multiline documentation.
+"""
+# We will expand the Movie type as we progress through the tutorial
+type Movie {
+    id: ID!
+    title: String!
+    releaseYear: Int!
+    genre: Genre
+    "Average rating from 0 to 10"
+    rating: Float
+    "Runtime in minutes"
+    runtime: Int
+    plot: String
+    posterUrl: String
+    "The Movie Database (TMDB) external identifier"
+    tmdbId: Int
+}
+
+enum Genre {
+    ACTION
+    COMEDY
+    CRIME
+    DRAMA
+    FANTASY
+    HORROR
+    MYSTERY
+    ROMANCE
+    SCIFI
+    THRILLER
+    WAR
+    WESTERN
+}
+
+enum MovieSortField {
+    TITLE
+    RELEASE_YEAR
+    RATING
+    RUNTIME
+}
+
+enum SortOrder {
+    ASC
+    DESC
+}
+
+input MovieFilter {
+    genre: Genre
+    minRating: Float
+    maxRating: Float
+    minYear: Int
+    maxYear: Int
+    titleContains: String
+}
+
+input MovieSort {
+    field: MovieSortField
+    order: SortOrder
+}
+
+type MoviePage {
+    content: [Movie!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    size: Int!
+    isFirst: Boolean!
+    isLast: Boolean!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+"""A page of people"""
+type PersonPage {
+    content: [Person!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    size: Int!
+}
+
+type Person {
+    id: ID!
+    name: String!
+    birthYear: Int
+    """Short biography blurb"""
+    biography: String
+    """Portrait image URL (TMDB)"""
+    photoUrl: String
+}
