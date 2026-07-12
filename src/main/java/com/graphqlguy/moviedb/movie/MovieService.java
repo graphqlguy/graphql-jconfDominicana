@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.graphql.data.ArgumentValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,18 +95,26 @@ public class MovieService {
         applyIfPresent(input.title(), movie::setTitle);
         applyIfPresent(input.releaseYear(), movie::setReleaseYear);
         applyIfPresent(input.genre(), movie::setGenre);
-        applyIfPresent(input.rating(), movie::setRating);
-        applyIfPresent(input.runtime(), movie::setRuntime);
-        applyIfPresent(input.plot(), movie::setPlot);
-        applyIfPresent(input.posterUrl(), movie::setPosterUrl);
-        applyIfPresent(input.tmdbId(), movie::setTmdbId);
+        applyIfProvided(input.rating(), movie::setRating);
+        applyIfProvided(input.runtime(), movie::setRuntime);
+        applyIfProvided(input.plot(), movie::setPlot);
+        applyIfProvided(input.posterUrl(), movie::setPosterUrl);
+        applyIfProvided(input.tmdbId(), movie::setTmdbId);
 
         return movieRepository.save(movie);
     }
 
-    private <T> void applyIfPresent(final T value, final Consumer<T> setter) {
-        if (value != null) {
-            setter.accept(value);
+    // Required fields: a provided value replaces the old one; null or omitted leaves it unchanged.
+    private <T> void applyIfPresent(final ArgumentValue<T> arg, final Consumer<T> setter) {
+        if (arg.isPresent()) {
+            setter.accept(arg.value());
+        }
+    }
+
+    // Optional fields: an explicit null clears the value; an omitted field leaves it unchanged.
+    private <T> void applyIfProvided(final ArgumentValue<T> arg, final Consumer<T> setter) {
+        if (!arg.isOmitted()) {
+            setter.accept(arg.value());
         }
     }
 
