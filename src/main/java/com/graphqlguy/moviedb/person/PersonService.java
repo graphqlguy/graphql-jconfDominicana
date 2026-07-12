@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.ArgumentValue;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,7 @@ public class PersonService {
 
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     Person createPerson(final CreatePersonInput input) {
         latencySimulator.pause();
         log.debug("Creating person {}", input);
@@ -55,6 +57,7 @@ public class PersonService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     Person updatePerson(final UpdatePersonInput input) {
         latencySimulator.pause();
         log.debug("Updating person {}", input);
@@ -91,6 +94,7 @@ public class PersonService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     DeletePersonResponse delete(final Long id, final boolean force) {
         latencySimulator.pause();
         log.debug("Deleting person {} (force={})", id, force);
