@@ -9,6 +9,7 @@ import PeoplePage from './pages/PeoplePage';
 import PersonDetailPage from './pages/PersonDetailPage';
 import TvShowsPage from './pages/TvShowsPage';
 import TvShowDetailPage from './pages/TvShowDetailPage';
+import WatchlistPage from './pages/WatchlistPage';
 import { useCaps } from './context/CapabilitiesContext';
 
 function StatusPanel({ emoji, title, children, onRetry }) {
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/person/:id" element={<PersonDetailPage />} />
             <Route path="/tvshows" element={<TvShowsPage />} />
             <Route path="/tvshow/:id" element={<TvShowDetailPage />} />
+            <Route path="/watchlist" element={<WatchlistPage />} />
           </Routes>
         )}
       </main>
