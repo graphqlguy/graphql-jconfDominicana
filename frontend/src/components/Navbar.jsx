@@ -32,6 +32,9 @@ export default function Navbar() {
               {caps?.query('tvShows') && (
                 <Link to="/tvshows" className="text-zinc-300 hover:text-white transition-colors text-sm">TV Shows</Link>
               )}
+              {caps?.query('watchlist') && isLoggedIn && (
+                <Link to="/watchlist" className="text-zinc-300 hover:text-white transition-colors text-sm">Watch List</Link>
+              )}
               {canAdmin && (
                 <Link to="/admin" className="text-yellow-400 hover:text-yellow-300 transition-colors text-sm font-medium">
                   + Add Movie
