@@ -21,5 +21,6 @@ The frontend is schema-aware: it asks the API what exists (via GraphQL introspec
 7. [Search and unions](07-search-and-unions.md) - typed search queries, union types, inline fragments, union vs interface
 8. [Custom scalars and external APIs](08-custom-scalars-and-external-apis.md) - the extended-scalars library, CountryCode, calling an external GraphQL API, caching and graceful failure
 9. [TV shows, interfaces, and a watch list](09-tv-shows-interfaces-and-watch-list.md) - exposing TV shows, interface types, `@oneOf` input types, a per-user authenticated feature
+10. [Reviews, authorization, and subscriptions](10-reviews-authorization-and-subscriptions.md) - the DateTime scalar, object-level and field-level authorization, real-time updates over WebSocket
 
 More classes are added as the workshop progresses.
