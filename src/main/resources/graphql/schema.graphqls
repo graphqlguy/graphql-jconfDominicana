@@ -25,6 +25,8 @@ type Query {
 
     """Search TMDB (The Movie Database) for movies by title"""
     tmdbSearch(title: String!): [TmdbResult!]!
+    """The signed-in user's watch list."""
+    watchlist: [WatchlistItem!]!
     """Look up a country by its ISO 3166-1 alpha-2 code, e.g. CZ"""
     country(code: ID!): Country
 }
@@ -87,7 +89,15 @@ enum Genre {
     WESTERN
 }
 
-type Movie {
+"""Something watchable: the fields a Movie and a TV show have in common."""
+interface Content {
+    title: String!
+    genre: Genre
+    rating: Float
+    posterUrl: String
+}
+
+type Movie implements Content {
     id: ID!
     title: String!
     releaseYear: Int!
@@ -180,6 +190,13 @@ type Mutation {
     createReview(input: CreateReviewInput!): Review!
     """Delete a review (owner or admin only)"""
     deleteReview(id: ID!): DeleteReviewResponse!
+
+    """Add a movie or TV show to the signed-in user's watch list."""
+    addToWatchlist(subject: WatchlistSubjectInput!, status: WatchStatus): WatchlistItem!
+    """Change a watch-list entry's status, e.g. mark it watched."""
+    setWatchStatus(itemId: ID!, status: WatchStatus!): WatchlistItem!
+    """Remove an entry from the watch list."""
+    removeFromWatchlist(itemId: ID!): Boolean!
 }
 
 type Subscription {
@@ -213,6 +230,24 @@ input CreateReviewInput {
     """Rating from 1 to 10"""
     score: Int! @Range(min: 1, max: 10)
     comment: String @Size(max: 2000)
+}
+
+"""A single entry in a user's watch list: a movie or a show, plus its status."""
+type WatchlistItem {
+    id: ID!
+    content: Content!
+    status: WatchStatus!
+}
+
+enum WatchStatus {
+    WANT_TO_WATCH
+    WATCHED
+}
+
+"""Identifies the title to add. @oneOf: provide exactly one of movieId or tvShowId."""
+input WatchlistSubjectInput @oneOf {
+    movieId: ID
+    tvShowId: ID
 }
 
 """Result of deleting a review."""
@@ -294,10 +329,10 @@ enum DeletePersonError {
 }
 
 """A television show"""
-type TvShow {
+type TvShow implements Content {
     id: ID!
     title: String!
-    genre: Genre!
+    genre: Genre
     """Average rating on a scale of 0-10"""
     rating: Float
     posterUrl: String
