@@ -16,7 +16,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: false
@@ -36,7 +36,7 @@ jwt:
   expiration: 86400000
 demo:
   # Artificial resolver latency for demoing batching / parallel field fetching. 0 = no delay.
-  latency: 1s
+  latency: 0s
 tmdb:
   # API Read Access Token (v4); empty fallback keeps the app fully usable without a key
   api-key: ${TMDB_API_KEY:}
