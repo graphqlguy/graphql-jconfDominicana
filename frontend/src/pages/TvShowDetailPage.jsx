@@ -4,6 +4,7 @@ import { useQuery } from '@apollo/client/react';
 import { useCaps } from '../context/CapabilitiesContext';
 import { NOOP } from '../graphql/documents';
 import ReviewSection from '../components/ReviewSection';
+import WatchlistButton from '../components/WatchlistButton';
 import FeaturePending from '../components/FeaturePending';
 
 export default function TvShowDetailPage() {
@@ -94,6 +95,9 @@ export default function TvShowDetailPage() {
           {show.plot && (
             <p className="text-zinc-300 leading-relaxed max-w-2xl">{show.plot}</p>
           )}
+          <div className="mt-4">
+            <WatchlistButton tvShowId={show.id} />
+          </div>
         </div>
       </div>
 
