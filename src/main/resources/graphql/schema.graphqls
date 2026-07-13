@@ -1,38 +1,87 @@
+
+
 scalar DateTime
-"""ISO 3166-1 alpha-2 country code, e.g. US - validated by the CountryCode extended scalar"""
 scalar CountryCode
 
-# Validation directives enforced by graphql-java-extended-validation (wired in GraphQLConfig)
 directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Size.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 directive @Pattern(regexp: String!, message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
+# The single entry point of our API. This line is a comment, by the way:
+# comments start with # and are only for people reading this file.
 type Query {
-    moviesAll: [Movie!]!
-    # page/size are @Range-validated so bad values fail as BAD_REQUEST instead of reaching PageRequest.of and blowing up as 500s
-    movies(filter: MovieFilter, page: Int = 0 @Range(min: 0), size: Int = 10 @Range(min: 1, max: 100), sort: MovieSort): MoviePage!
+    moviesAll: [Movie!]! @deprecated(reason: "Unbounded. Use 'movies' instead.")
     movie(id: ID!): Movie
-    searchMovies(title: String!): [Movie]
+    movies(filter: MovieFilter, page: Int = 0 @Range(min: 0), size: Int = 10 @Range(min: 1, max: 100), sort: MovieSort): MoviePage!
     moviesByIds(ids: [ID!]!): [Movie]
-
-    tvShow(id: ID!): TvShow
-    tvShows(page: Int = 0 @Range(min: 0), size: Int = 10 @Range(min: 1, max: 100)): TvShowPage!
-    search(query: String!): [SearchResult!]!
-
-    person(id: ID!): Person
+    searchMovies(title: String!): [Movie]
     people(page: Int = 0 @Range(min: 0), size: Int = 20 @Range(min: 1, max: 100)): PersonPage!
+    person(id: ID!): Person
     searchPeople(name: String!): [Person!]!
-
-    """Search TMDB (The Movie Database) for movies by title"""
-    tmdbSearch(title: String!): [TmdbResult!]!
-    """The signed-in user's watch list."""
-    watchlist: [WatchlistItem!]!
+    search(query: String!): [SearchResult!]!
     """Look up a country by its ISO 3166-1 alpha-2 code, e.g. CZ"""
     country(code: ID!): Country
+    """Search TMDB (The Movie Database) for movies by title"""
+    tmdbSearch(title: String!): [TmdbResult!]!
+    tvShow(id: ID!): TvShow
+    tvShows(page: Int = 0 @Range(min: 0), size: Int = 10 @Range(min: 1, max: 100)): TvShowPage!
+    """The signed-in user's watch list."""
+    watchlist: [WatchlistItem!]!
 }
 
 """Union of Movie and Person for cross-type search"""
-union SearchResult = Movie | Person
+union SearchResult = Movie | Person | TvShow
+
+"""Something watchable: the fields a Movie and a TV show have in common."""
+interface Content {
+    title: String!
+    genre: Genre
+    rating: Float
+    posterUrl: String
+}
+
+"""
+    Custom Movie type
+    All movie details are taken from the The Movie Database (TMDB)
+    Triple quotes allow multiline documentation.
+"""
+# We will expand the Movie type as we progress through the tutorial
+type Movie implements Content {
+    id: ID!
+    title: String!
+    releaseYear: Int!
+    genre: Genre
+    "Average rating from 0 to 10"
+    rating: Float
+    "Runtime in minutes"
+    runtime: Int
+    plot: String
+    posterUrl: String
+    "The Movie Database (TMDB) external identifier"
+    tmdbId: Int
+    """Live community rating from TMDB; null when the movie has no tmdbId or TMDB is unavailable"""
+    communityRating: CommunityRating
+    directors: [Person!]!
+    cast: [MovieCast!]!
+    reviews: [Review!]!
+    """Number of reviews - resolved as a grouped COUNT via @BatchMapping"""
+    reviewCount: Int!
+}
+
+enum Genre {
+    ACTION
+    COMEDY
+    CRIME
+    DRAMA
+    FANTASY
+    HORROR
+    MYSTERY
+    ROMANCE
+    SCIFI
+    THRILLER
+    WAR
+    WESTERN
+}
 
 enum MovieSortField {
     TITLE
@@ -72,79 +121,69 @@ type MoviePage {
     hasPrevious: Boolean!
 }
 
-
-
-enum Genre {
-    ACTION
-    COMEDY
-    CRIME
-    DRAMA
-    FANTASY
-    HORROR
-    MYSTERY
-    ROMANCE
-    SCIFI
-    THRILLER
-    WAR
-    WESTERN
-}
-
-"""Something watchable: the fields a Movie and a TV show have in common."""
-interface Content {
-    title: String!
-    genre: Genre
-    rating: Float
-    posterUrl: String
-}
-
-type Movie implements Content {
-    id: ID!
-    title: String!
-    releaseYear: Int!
-    genre: Genre
-    rating: Float
-    directors: [Person!]!
-    cast: [MovieCast!]!
-    reviews: [Review!]!
-    """Runtime in minutes"""
-    runtime: Int
-    plot: String
-    posterUrl: String
-    """The Movie Database (TMDB) external identifier"""
-    tmdbId: Int
-    """Live community rating from TMDB; null when the movie has no tmdbId or TMDB is unavailable"""
-    communityRating: CommunityRating
-    """Number of reviews - resolved as a grouped COUNT via @BatchMapping"""
-    reviewCount: Int!
+"""A page of people"""
+type PersonPage {
+    content: [Person!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    size: Int!
 }
 
 type Person {
     id: ID!
     name: String!
     birthYear: Int
-    """ISO 3166-1 alpha-2 code of the person's country"""
-    countryCode: CountryCode
-    """Country details resolved live from the external countries GraphQL API"""
-    country: Country
     """Short biography blurb"""
     biography: String
     """Portrait image URL (TMDB)"""
     photoUrl: String
+    """ISO 3166-1 alpha-2 country code"""
+    countryCode: CountryCode
+    """Country details resolved live from the external countries GraphQL API"""
+    country: Country
     """Movies this person directed"""
     directedMovies: [Movie!]!
-    """TV shows this person created"""
-    createdShows: [TvShow!]!
     """This person's acting credits in movies"""
     movieCastCredits: [MovieCast!]!
+    """TV shows this person created"""
+    createdShows: [TvShow!]!
     """This person's acting credits in TV shows"""
     tvShowCastCredits: [TvShowCast!]!
 }
+
 
 type MovieCast {
     id: ID!
     characterName: String!
     person: Person!
     movie: Movie!
+}
+
+type Country {
+    "ISO 3166-1 alpha-2 code, e.g. CZ"
+    code: ID!
+    name: String!
+    emoji: String
+    capital: String
+    currency: String
+}
+
+"""A movie search result from TMDB (The Movie Database)"""
+type TmdbResult {
+    tmdbId: Int!
+    title: String!
+    releaseYear: Int
+    overview: String
+    posterUrl: String
+    """TMDB community vote average on a 0-10 scale"""
+    rating: Float
+}
+
+type CommunityRating {
+    """Vote average on a 0-10 scale"""
+    voteAverage: Float!
+    voteCount: Int!
 }
 
 type AuthResponse {
@@ -164,24 +203,14 @@ enum Role {
     ADMIN
 }
 
-"""A user's review of a movie"""
-type Review {
-    id: ID!
-    """Rating from 1 to 10"""
-    score: Int!
-    comment: String
-    createdAt: DateTime!
-    user: User!
-}
-
 type Mutation {
-    createMovie(input: CreateMovieInput!): Movie!
-    updateMovie(input: UpdateMovieInput!): Movie!
     deleteMovie(id: ID!): DeleteMovieResponse!
-    createPerson(input: CreatePersonInput!): Person!
-    updatePerson(input: UpdatePersonInput!): Person!
     "Deletes a person. With force: true, all movie/TV credits are unlinked first; otherwise a linked person yields a structured error."
     deletePerson(id: ID!, force: Boolean! = false): DeletePersonResponse!
+    createMovie(input: CreateMovieInput!): Movie!
+    updateMovie(input: UpdateMovieInput!): Movie!
+    createPerson(input: CreatePersonInput!): Person!
+    updatePerson(input: UpdatePersonInput!): Person!
     login(input: LoginInput!): AuthResponse!
     """Create a new USER account and sign in immediately"""
     register(input: RegisterInput!): AuthResponse!
@@ -199,63 +228,6 @@ type Mutation {
     removeFromWatchlist(itemId: ID!): Boolean!
 }
 
-type Subscription {
-    """Live notifications when reviews are posted, pushed over WebSocket. Optionally filter by movieId."""
-    reviewAdded(movieId: ID, tvShowId: ID): ReviewNotification!
-}
-
-"""Notification pushed to subscribers when a review is created"""
-type ReviewNotification {
-    review: Review!
-    """Set when the review targets a movie"""
-    movieId: ID
-    """Set when the review targets a TV show"""
-    tvShowId: ID
-    """Title of the reviewed movie or show"""
-    title: String!
-}
-
-"""
-The review target. @oneOf makes this an input union: exactly one of the
-fields must be provided, enforced by GraphQL itself before any resolver runs.
-"""
-input ReviewSubjectInput @oneOf {
-    movieId: ID
-    tvShowId: ID
-}
-
-"""Input for creating a review of a movie or TV show"""
-input CreateReviewInput {
-    subject: ReviewSubjectInput!
-    """Rating from 1 to 10"""
-    score: Int! @Range(min: 1, max: 10)
-    comment: String @Size(max: 2000)
-}
-
-"""A single entry in a user's watch list: a movie or a show, plus its status."""
-type WatchlistItem {
-    id: ID!
-    content: Content!
-    status: WatchStatus!
-}
-
-enum WatchStatus {
-    WANT_TO_WATCH
-    WATCHED
-}
-
-"""Identifies the title to add. @oneOf: provide exactly one of movieId or tvShowId."""
-input WatchlistSubjectInput @oneOf {
-    movieId: ID
-    tvShowId: ID
-}
-
-"""Result of deleting a review."""
-type DeleteReviewResponse {
-    success: Boolean!
-    """ID of the deleted review, or null if nothing was deleted."""
-    deletedId: ID
-}
 
 input LoginInput {
     username: String!
@@ -269,7 +241,26 @@ input RegisterInput {
     password: String! @Size(min: 6, max: 100)
 }
 
-"""Input for creating a movie. Field limits are enforced at schema level via validation directives."""
+"""Result of deleting a movie."""
+type DeleteMovieResponse {
+    success: Boolean!
+    message: String!
+    """ID of the deleted movie, or null if nothing was deleted."""
+    deletedId: ID
+}
+
+type DeletePersonResponse {
+    success: Boolean!
+    error: DeletePersonError
+    deletedId: String
+}
+
+enum DeletePersonError {
+    LINKED_TO_MOVIE
+    LINKED_TO_TV_SHOW
+}
+
+"""Input for creating a movie."""
 input CreateMovieInput {
     title: String! @Size(min: 1, max: 200)
     releaseYear: Int! @Range(min: 1888, max: 2100)
@@ -311,33 +302,16 @@ input CreatePersonInput {
     countryCode: CountryCode
 }
 
-type DeleteMovieResponse {
-    success: Boolean!
-    message: String!
-    deletedId: String
-}
-
-type DeletePersonResponse {
-    success: Boolean!
-    error: DeletePersonError
-    deletedId: String
-}
-
-enum DeletePersonError {
-    LINKED_TO_MOVIE
-    LINKED_TO_TV_SHOW
-}
-
 """A television show"""
 type TvShow implements Content {
     id: ID!
     title: String!
     genre: Genre
-    """Average rating on a scale of 0-10"""
+    "Average rating on a scale of 0-10"
     rating: Float
     posterUrl: String
     startYear: Int!
-    """Null while the show is still airing"""
+    "Null while the show is still airing"
     endYear: Int
     seasons: Int
     plot: String
@@ -354,7 +328,7 @@ type Episode {
     episodeNumber: Int!
     title: String!
     overview: String
-    """Runtime in minutes"""
+    "Runtime in minutes"
     runtime: Int
     airYear: Int
 }
@@ -376,38 +350,70 @@ type TvShowPage {
     size: Int!
 }
 
-"""A page of people"""
-type PersonPage {
-    content: [Person!]!
-    totalElements: Int!
-    totalPages: Int!
-    currentPage: Int!
-    size: Int!
+"""A single entry in a user's watch list: a movie or a show, plus its status."""
+type WatchlistItem {
+    id: ID!
+    content: Content!
+    status: WatchStatus!
 }
 
-"""A movie search result from TMDB (The Movie Database)"""
-type TmdbResult {
-    tmdbId: Int!
+enum WatchStatus {
+    WANT_TO_WATCH
+    WATCHED
+}
+
+"""Identifies the title to add. @oneOf: provide exactly one of movieId or tvShowId."""
+input WatchlistSubjectInput @oneOf {
+    movieId: ID
+    tvShowId: ID
+}
+
+"""A user's review of a movie or TV show"""
+type Review {
+    id: ID!
+    """Rating from 1 to 10"""
+    score: Int!
+    comment: String
+    createdAt: DateTime!
+    user: User!
+}
+
+type Subscription {
+    """Live notifications when reviews are posted, pushed over WebSocket. Optionally filter by movieId or tvShowId."""
+    reviewAdded(movieId: ID, tvShowId: ID): ReviewNotification!
+}
+
+"""Notification pushed to subscribers when a review is created"""
+type ReviewNotification {
+    review: Review!
+    """Set when the review targets a movie"""
+    movieId: ID
+    """Set when the review targets a TV show"""
+    tvShowId: ID
+    """Title of the reviewed movie or show"""
     title: String!
-    releaseYear: Int
-    overview: String
-    posterUrl: String
-    """TMDB community vote average on a 0-10 scale"""
-    rating: Float
 }
 
-"""Live community rating sourced from TMDB"""
-type CommunityRating {
-    """Vote average on a 0-10 scale"""
-    voteAverage: Float!
-    voteCount: Int!
+"""
+The review target. @oneOf makes this an input union: exactly one of the
+fields must be provided, enforced by GraphQL itself before any resolver runs.
+"""
+input ReviewSubjectInput @oneOf {
+    movieId: ID
+    tvShowId: ID
 }
 
-type Country {
-    "ISO 3166-1 alpha-2 code, e.g. CZ"
-    code: ID!
-    name: String!
-    emoji: String
-    capital: String
-    currency: String
+"""Input for creating a review of a movie or TV show"""
+input CreateReviewInput {
+    subject: ReviewSubjectInput!
+    """Rating from 1 to 10"""
+    score: Int! @Range(min: 1, max: 10)
+    comment: String @Size(max: 2000)
+}
+
+"""Result of deleting a review."""
+type DeleteReviewResponse {
+    success: Boolean!
+    """ID of the deleted review, or null if nothing was deleted."""
+    deletedId: ID
 }

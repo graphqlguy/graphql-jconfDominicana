@@ -1,4 +1,4 @@
-    package com.graphqlguy.moviedb.config;
+package com.graphqlguy.moviedb.config;
 
 import graphql.scalars.ExtendedScalars;
 import graphql.validation.rules.OnValidationErrorStrategy;

@@ -20,28 +20,20 @@ import java.util.UUID;
 public class GlobalExceptionHandler {
 
     @GraphQlExceptionHandler
-    public GraphQLError handleEntityNotFoundException(final EntityNotFoundException enfe, DataFetchingEnvironment environment) {
-        return GraphqlErrorBuilder.newError(environment)
-                .message(enfe.getMessage())
-                .errorType(ErrorType.NOT_FOUND)
-                .extensions(Map.of("entityType", enfe.getEntityType()))
-                .build();
-    }
-
-    @GraphQlExceptionHandler
-    public GraphQLError handleInvalidInputException(final InvalidInputException iie, DataFetchingEnvironment environment) {
-        return GraphqlErrorBuilder.newError(environment)
-                .message(iie.getMessage())
-                .errorType(ErrorType.BAD_REQUEST)
-                .extensions(Map.of("field", iie.getField()))
-                .build();
-    }
-
-    @GraphQlExceptionHandler
-    public GraphQLError handleAccessDenied(AccessDeniedException ex, DataFetchingEnvironment env) {
+    public GraphQLError handleEntityNotFound(final EntityNotFoundException ex, DataFetchingEnvironment env) {
         return GraphqlErrorBuilder.newError(env)
-                .message("You are not authorized to perform this action")
-                .errorType(ErrorType.FORBIDDEN)
+                .message(ex.getMessage())
+                .errorType(ErrorType.NOT_FOUND)
+                .extensions(Map.of("entityType", ex.getEntityType()))
+                .build();
+    }
+
+    @GraphQlExceptionHandler
+    public GraphQLError handleInvalidInput(final InvalidInputException ex, DataFetchingEnvironment env) {
+        return GraphqlErrorBuilder.newError(env)
+                .message(ex.getMessage())
+                .errorType(ErrorType.BAD_REQUEST)
+                .extensions(Map.of("field", ex.getField()))
                 .build();
     }
 
@@ -54,8 +46,15 @@ public class GlobalExceptionHandler {
     }
 
     @GraphQlExceptionHandler
-    public GraphQLError handleConstraintViolation(ConstraintViolationException ex,
-                                                  DataFetchingEnvironment env) {
+    public GraphQLError handleAccessDenied(AccessDeniedException ex, DataFetchingEnvironment env) {
+        return GraphqlErrorBuilder.newError(env)
+                .message("You are not authorized to perform this action")
+                .errorType(ErrorType.FORBIDDEN)
+                .build();
+    }
+
+    @GraphQlExceptionHandler
+    public GraphQLError handleConstraintViolation(ConstraintViolationException ex, DataFetchingEnvironment env) {
         ConstraintViolation<?> first = ex.getConstraintViolations().iterator().next();
         String field = first.getPropertyPath().toString();
         return GraphqlErrorBuilder.newError(env)
@@ -65,13 +64,10 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
-    // Safety net for DB constraint violations (FKs, unique constraints, column
-    // limits): without this they fall through to handleUnhandled and surface as
-    // opaque 500s. Note: this is Spring's DataAccessException, not the jakarta
-    // bean-validation ConstraintViolationException handled above.
+    // Safety net for database constraints (foreign keys, unique constraints);
+    // this is Spring's DataAccessException, not the Jakarta validation one above.
     @GraphQlExceptionHandler
-    public GraphQLError handleDataIntegrityViolation(final DataIntegrityViolationException ex,
-                                                     DataFetchingEnvironment env) {
+    public GraphQLError handleDataIntegrityViolation(final DataIntegrityViolationException ex, DataFetchingEnvironment env) {
         log.warn("Data integrity violation at path={}: {}", env.getExecutionStepInfo().getPath(), ex.getMessage());
         return GraphqlErrorBuilder.newError(env)
                 .message("The request conflicts with existing data and could not be completed")
@@ -80,12 +76,10 @@ public class GlobalExceptionHandler {
     }
 
     @GraphQlExceptionHandler
-    public GraphQLError handleUnhandled(final Exception e, DataFetchingEnvironment environment) {
-
+    public GraphQLError handleUnhandled(final Exception ex, DataFetchingEnvironment env) {
         String reference = UUID.randomUUID().toString();
-        log.error("Unhandled exception, reference={}, path={}", reference, environment.getExecutionStepInfo().getPath(), e);
-
-        return GraphqlErrorBuilder.newError(environment)
+        log.error("Unhandled exception, reference={}, path={}", reference, env.getExecutionStepInfo().getPath(), ex);
+        return GraphqlErrorBuilder.newError(env)
                 .message("An unexpected error occurred while processing the request. Reference: " + reference)
                 .errorType(ErrorType.INTERNAL_ERROR)
                 .extensions(Map.of("reference", reference))
