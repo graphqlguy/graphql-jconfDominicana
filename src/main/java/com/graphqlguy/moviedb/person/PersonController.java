@@ -1,24 +1,30 @@
 package com.graphqlguy.moviedb.person;
 
+import com.graphqlguy.moviedb.country.Country;
+import com.graphqlguy.moviedb.country.CountryService;
 import com.graphqlguy.moviedb.movie.Movie;
 import com.graphqlguy.moviedb.movie.MovieCast;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class PersonController {
 
     private final PersonService personService;
+    private final CountryService countryService;
 
     @QueryMapping
     Person person(@Argument Long id) {
@@ -33,6 +39,20 @@ public class PersonController {
     @QueryMapping
     List<Person> searchPeople(@Argument String name) {
         return personService.searchByName(name);
+    }
+
+    @SchemaMapping(typeName = "Person")
+    Country country(Person person) {
+        if (person.getCountryCode() == null) {
+            return null;
+        }
+        try {
+            return countryService.findByCode(person.getCountryCode());
+        } catch (Exception e) {
+            // The external countries API being down should not break person queries
+            log.warn("Could not resolve country {} from external API: {}", person.getCountryCode(), e.getMessage());
+            return null;
+        }
     }
 
     @BatchMapping
