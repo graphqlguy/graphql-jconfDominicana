@@ -463,5 +463,3 @@ query {
 `tmdbSearch` returns live results from TMDB's catalogue, and every movie with a `tmdbId` comes back with its current community rating, all fetched in a single batched round of calls.
 
 </details>
-</content>
-</invoke>
