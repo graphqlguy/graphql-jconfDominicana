@@ -8,6 +8,9 @@ import com.graphqlguy.moviedb.person.Person;
 import com.graphqlguy.moviedb.person.PersonRepository;
 import com.graphqlguy.moviedb.review.Review;
 import com.graphqlguy.moviedb.review.ReviewRepository;
+import com.graphqlguy.moviedb.watchlist.WatchStatus;
+import com.graphqlguy.moviedb.watchlist.WatchlistItem;
+import com.graphqlguy.moviedb.watchlist.WatchlistItemRepository;
 import com.graphqlguy.moviedb.tvshow.TvShow;
 import com.graphqlguy.moviedb.tvshow.TvShowCast;
 import com.graphqlguy.moviedb.tvshow.TvShowCastRepository;
@@ -40,12 +43,14 @@ public class DataInitializer {
     private final EpisodeRepository episodeRepo;
     private final UserRepository userRepo;
     private final ReviewRepository reviewRepo;
+    private final WatchlistItemRepository watchlistRepo;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(final MovieRepository movieRepo, final PersonRepository personRepo,
                            final MovieCastRepository movieCastRepo, final TvShowRepository tvShowRepo,
                            final TvShowCastRepository tvShowCastRepo, final EpisodeRepository episodeRepo,
                            final UserRepository userRepo, final ReviewRepository reviewRepo,
+                           final WatchlistItemRepository watchlistRepo,
                            final PasswordEncoder passwordEncoder) {
         this.movieRepo = movieRepo;
         this.personRepo = personRepo;
@@ -55,6 +60,7 @@ public class DataInitializer {
         this.episodeRepo = episodeRepo;
         this.userRepo = userRepo;
         this.reviewRepo = reviewRepo;
+        this.watchlistRepo = watchlistRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -761,6 +767,14 @@ public class DataInitializer {
                     .comment("The blueprint for every sitcom since.").build(),
                 Review.builder().user(admin).tvShow(got).score(7)
                     .comment("Amazing until the final season.").build()));
+
+            // ── Watch lists (max one entry per user per title) ───────────
+            watchlistRepo.saveAll(List.of(
+                WatchlistItem.builder().user(admin).movie(inception).status(WatchStatus.WATCHED).build(),
+                WatchlistItem.builder().user(admin).tvShow(got).status(WatchStatus.WANT_TO_WATCH).build(),
+                WatchlistItem.builder().user(user).movie(theMatrix).status(WatchStatus.WATCHED).build(),
+                WatchlistItem.builder().user(user).movie(shawshank).status(WatchStatus.WANT_TO_WATCH).build(),
+                WatchlistItem.builder().user(user).tvShow(seinfeld).status(WatchStatus.WANT_TO_WATCH).build()));
 
                 log.info("Seeding complete. {} movies, {} TV shows and {} reviews created.",
                     movieRepo.count(), tvShowRepo.count(), reviewRepo.count());
