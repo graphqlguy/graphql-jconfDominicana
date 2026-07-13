@@ -1,10 +1,13 @@
 # From Zero to Query: Build, Secure, and Deploy a Production-Ready GraphQL API in One Afternoon
 
+> [!NOTE]
+> This is the **finished** application. The workshop starting point is on **`main`**, each class has a **`checkpoint_N`** branch with the code as it stands at the end of that class, and the step-by-step instructions are in the [`workshop/`](workshop/) folder.
+
 Companion repository for the hands-on workshop at **[JConf Dominicana](https://jconfdominicana.org)**, presented by **Željko Kozina**.
 
 > In this hands-on workshop, you'll go from an empty project to a deployed, production-grade GraphQL API - no prior GraphQL experience required. Basic Spring Boot knowledge is desired. Starting with schema design fundamentals, we'll incrementally build a fully functional API using Spring for GraphQL. Each module builds on the last: defining your schema and first resolvers; modelling relationships and solving the N+1 problem with DataLoaders; adding field-level authentication and input validation; and writing integration tests with GraphQL-specific assertions. By the end, you'll have a running service you built yourself, a clear understanding of GraphQL's core concepts, and - just as importantly - the judgment to know when GraphQL is the right choice and when it isn't. Bring your laptop and your curiosity.
 
-This branch (**`completed`**) contains the finished application we build during the workshop: **MovieDB**, a Spring for GraphQL API with a React frontend.
+This branch (**`completed`**) contains the finished application we build during the workshop: **MovieDB**, a movie and TV database with people, reviews, and search, built as a Spring for GraphQL API with a React frontend.
 
 ## What We'll Cover
 
@@ -33,15 +36,43 @@ Topics include:
 - GraphiQL IDE: http://localhost:8080/graphiql
 - H2 console: http://localhost:8080/h2-console (JDBC URL `jdbc:h2:mem:moviedb`, user `sa`, empty password)
 
+If port 8080 is already in use, see [changing the port](#changing-the-port) below.
+
 ## Running the Frontend
+
+Requires Node.js. The first time (and after dependency changes), install the packages before starting the dev server:
 
 ```bash
 cd frontend
-npm install
+npm install    # first time only
 npm run dev
 ```
 
-Open http://localhost:5173.
+Open http://localhost:5173. If you see `sh: vite: command not found`, you skipped `npm install`.
+
+## Changing the Port
+
+If port 8080 is taken, change it in two places, because the frontend forwards its API calls to the backend.
+
+**Backend** (`src/main/resources/application.yaml`):
+
+```yaml
+server:
+  port: 8090
+```
+
+**Frontend** (`frontend/vite.config.js`): point the proxy at the same port so `/graphql` calls reach the backend:
+
+```js
+proxy: {
+  '/graphql': {
+    target: 'http://localhost:8090',
+    ws: true,
+  },
+}
+```
+
+The frontend's own dev-server port (5173) is unrelated; change it only if 5173 is also taken, by running `npm run dev -- --port 5174`.
 
 ## Seed Users
 
