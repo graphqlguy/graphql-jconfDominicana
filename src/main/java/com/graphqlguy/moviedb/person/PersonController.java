@@ -4,6 +4,8 @@ import com.graphqlguy.moviedb.country.Country;
 import com.graphqlguy.moviedb.country.CountryService;
 import com.graphqlguy.moviedb.movie.Movie;
 import com.graphqlguy.moviedb.movie.MovieCast;
+import com.graphqlguy.moviedb.tvshow.TvShow;
+import com.graphqlguy.moviedb.tvshow.TvShowCast;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,6 +88,24 @@ public class PersonController {
     Map<Person, List<MovieCast>> movieCastCredits(List<Person> people) {
         List<Long> personIds = people.stream().map(Person::getId).toList();
         Map<Long, List<MovieCast>> creditsByPersonId = personService.findMovieCastCreditsByPersonIds(personIds);
+        return people.stream()
+                .collect(Collectors.toMap(person -> person,
+                        person -> creditsByPersonId.getOrDefault(person.getId(), List.of())));
+    }
+
+    @BatchMapping
+    Map<Person, List<TvShow>> createdShows(List<Person> people) {
+        List<Long> personIds = people.stream().map(Person::getId).toList();
+        Map<Long, List<TvShow>> showsByPersonId = personService.findCreatedShowsByPersonIds(personIds);
+        return people.stream()
+                .collect(Collectors.toMap(person -> person,
+                        person -> showsByPersonId.getOrDefault(person.getId(), List.of())));
+    }
+
+    @BatchMapping
+    Map<Person, List<TvShowCast>> tvShowCastCredits(List<Person> people) {
+        List<Long> personIds = people.stream().map(Person::getId).toList();
+        Map<Long, List<TvShowCast>> creditsByPersonId = personService.findTvShowCastCreditsByPersonIds(personIds);
         return people.stream()
                 .collect(Collectors.toMap(person -> person,
                         person -> creditsByPersonId.getOrDefault(person.getId(), List.of())));
