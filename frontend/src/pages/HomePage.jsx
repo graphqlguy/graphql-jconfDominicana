@@ -83,16 +83,17 @@ export default function HomePage() {
   const totalPages = rawMovies?.totalPages || 0;
   const totalElements = rawMovies?.totalElements || 0;
 
-  // The union search returns movies and people in one list, split here by
-  // __typename; the fallback fields cover schemas without the union.
+  // The union search returns movies, TV shows, and people in one list, split
+  // here by __typename; the fallback fields cover schemas without the union.
   const searchResults = searchData?.search || [];
   const searchMovies = searchResults
     .filter(r => r.__typename === 'Movie')
     .concat(searchData?.searchMovies || []);
+  const searchTvShows = searchResults.filter(r => r.__typename === 'TvShow');
   const searchPeople = searchResults
     .filter(r => r.__typename === 'Person')
     .concat(searchData?.searchPeople || []);
-  const hasSearchResults = searchMovies.length > 0 || searchPeople.length > 0;
+  const hasSearchResults = searchMovies.length > 0 || searchTvShows.length > 0 || searchPeople.length > 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -172,6 +173,42 @@ export default function HomePage() {
                         <div className="p-3">
                           <h3 className="text-white text-sm font-medium leading-tight line-clamp-2">{movie.title}</h3>
                           <p className="text-zinc-500 text-xs mt-1">{movie.releaseYear} · {movie.genre}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* TV Shows */}
+              {searchTvShows.length > 0 && (
+                <section>
+                  <h2 className="text-xl font-bold text-white mb-4">
+                    TV Shows <span className="text-zinc-500 font-normal text-base">({searchTvShows.length})</span>
+                  </h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {searchTvShows.map(show => (
+                      <Link key={show.id} to={`/tvshow/${show.id}`}
+                        className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-colors group">
+                        <div className="aspect-[2/3] bg-zinc-800 relative overflow-hidden">
+                          {show.posterUrl ? (
+                            <img src={show.posterUrl} alt={show.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              onError={e => { e.target.style.display = 'none'; }} />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-zinc-600 text-4xl">📺</div>
+                          )}
+                          {show.rating && (
+                            <div className="absolute top-2 right-2 bg-black/70 text-yellow-400 text-xs font-bold px-2 py-1 rounded">
+                              ★ {show.rating.toFixed(1)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <h3 className="text-white text-sm font-medium leading-tight line-clamp-2">{show.title}</h3>
+                          <p className="text-zinc-500 text-xs mt-1">
+                            {show.startYear}{show.endYear ? `-${show.endYear}` : '-'} · {show.genre}
+                          </p>
                         </div>
                       </Link>
                     ))}
