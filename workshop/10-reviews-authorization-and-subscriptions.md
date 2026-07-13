@@ -349,4 +349,3 @@ Flux<ReviewNotification> reviewAdded(@Argument Long movieId, @Argument Long tvSh
 With no arguments the client receives every review; with either id it receives only that title's. The `ReviewNotification` already carries both `movieId` and `tvShowId`, so no other change is needed.
 
 </details>
-</content>
