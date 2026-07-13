@@ -148,5 +148,4 @@ public class MovieService {
                 .map(Movie::getDirectors)
                 .orElseGet(List::of);
     }
-
 }

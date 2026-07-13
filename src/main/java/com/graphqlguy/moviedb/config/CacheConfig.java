@@ -23,7 +23,7 @@ public class CacheConfig {
     @Bean
     public Cache<String, Country> countryCache() {
         // Country data is effectively static; cache generously so person lists
-        // don't refetch the same code from the external API on every page.
+        // don't refetch the same code from the external API on every request.
         return Caffeine.newBuilder()
                 .expireAfterWrite(12, TimeUnit.HOURS)
                 .maximumSize(300)
