@@ -181,14 +181,110 @@ returns `Query depth 18 exceeds maximum allowed depth of 15`.
 
 ---
 
-## Exercise: expose the request id to clients on errors
+## Exercises: tightening the API
 
-The interceptor puts `requestId` in the GraphQL context. Surface it in the errors your API returns, so a client reporting a bug can quote the id. Add the id to each error's `extensions` in the `@ControllerAdvice` exception handler from Class 5.
+Building the feature set, we moved fast and left a few things half-done. Production is where they get finished. Each of these is small, and each uses something you already learned.
+
+### 1. Extend input validation
+
+Class 6 introduced the `@Range`, `@Size`, and `@Pattern` directives, but only `CreateMovieInput` got them. Untrusted input enters in more places. Apply the directives to:
+
+- `RegisterInput` — a real minimum length on `username`/`password`, a maximum on `email`, and an email `@Pattern`.
+- the `movies` and `people` query pagination arguments — `page`/`size` `@Range` (the `tvShows` query already has them).
+- `UpdateMovieInput` — the same limits `CreateMovieInput` has.
+
+<details>
+<summary>Solution</summary>
+
+```graphql
+directive @Pattern(regexp: String!, message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+input RegisterInput {
+    username: String! @Size(min: 3, max: 50)
+    email: String! @Size(max: 120) @Pattern(regexp: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+    password: String! @Size(min: 6, max: 100)
+}
+
+type Query {
+    movies(filter: MovieFilter, page: Int = 0 @Range(min: 0), size: Int = 10 @Range(min: 1, max: 100), sort: MovieSort): MoviePage!
+    people(page: Int = 0 @Range(min: 0), size: Int = 20 @Range(min: 1, max: 100)): PersonPage!
+}
+
+input UpdateMovieInput {
+    id: ID!
+    title: String @Size(min: 1, max: 200)
+    releaseYear: Int @Range(min: 1888, max: 2100)
+    genre: Genre
+    rating: Float @Range(min: 0, max: 10)
+    runtime: Int @Range(min: 1, max: 600)
+    plot: String @Size(max: 2000)
+    posterUrl: String @Size(max: 500)
+    tmdbId: Int
+}
+```
+
+The `@Pattern` directive must be declared once, alongside `@Range` and `@Size`. No Java changes: the wiring from Class 6 enforces all of it.
+
+</details>
+
+### 2. Handle duplicate reviews gracefully
+
+Try reviewing the same movie twice: the service throws `DuplicateReviewException`, but with no handler it falls through to the catch-all and surfaces as an opaque 500. Add a handler so it returns a clean `BAD_REQUEST`, the way the other domain exceptions do (Class 5).
+
+<details>
+<summary>Solution</summary>
+
+`GlobalExceptionHandler`:
+
+```java
+@GraphQlExceptionHandler
+public GraphQLError handleDuplicateReview(DuplicateReviewException ex, DataFetchingEnvironment env) {
+    return GraphqlErrorBuilder.newError(env)
+            .message(ex.getMessage())
+            .errorType(ErrorType.BAD_REQUEST)
+            .build();
+}
+```
+
+</details>
+
+### 3. Make search global
+
+Search should find everything. Class 7 built a `Movie | Person` union; TV shows already carry the `SearchResult` marker in anticipation. Add `TvShow` to the union and have the search resolver include shows, so one box searches the whole catalogue.
+
+<details>
+<summary>Solution</summary>
+
+```graphql
+union SearchResult = Movie | Person | TvShow
+```
+
+`SearchController`:
+
+```java
+private final TvShowService tvShowService;
+
+@QueryMapping
+List<SearchResult> search(@Argument String query) {
+    List<SearchResult> results = new ArrayList<>();
+    results.addAll(movieService.searchByTitle(query));
+    results.addAll(personService.searchByName(query));
+    results.addAll(tvShowService.searchByTitle(query));
+    return results;
+}
+```
+
+Spring resolves each result's concrete type by class name, exactly as before; the frontend's search page renders a TV Shows section as soon as the union includes them.
+
+</details>
+
+### 4. Expose the request id to clients on errors
+
+The interceptor puts `requestId` in the GraphQL context. Surface it in the errors your API returns, so a client reporting a bug can quote the id.
 
 <details>
 <summary>Hint</summary>
 
-The exception handler receives a `DataFetchingEnvironment`, from which `env.getGraphQlContext().get("requestId")` reads the value the interceptor stored. Add it to the error via `GraphqlErrorBuilder.newError(env).extensions(Map.of("requestId", requestId, ...))`. This gives every error a handle back to the exact request in your logs.
+The exception handler receives a `DataFetchingEnvironment`, from which `env.getGraphQlContext().get("requestId")` reads the value the interceptor stored. Add it to each error via `GraphqlErrorBuilder.newError(env).extensions(Map.of("requestId", requestId, ...))`, giving every error a handle back to the exact request in your logs.
 
 </details>
-</content>
