@@ -186,6 +186,47 @@ export function buildDocuments(caps) {
     }
   ` : null;
 
+  // ---- watch list ---------------------------------------------------------
+
+  // content is the Content interface: the shared fields (title, genre, rating,
+  // posterUrl) are read directly off the interface, and only the type-specific
+  // fields need an inline fragment. Selecting a shared field like genre inside
+  // both fragments would conflict, since Movie.genre is nullable and TvShow.genre
+  // is not; reading it once off the interface is the whole point.
+  const watchlistContent = `
+    content {
+      __typename
+      title
+      genre
+      rating
+      posterUrl
+      ... on Movie { id releaseYear }
+      ... on TvShow { id startYear endYear ${when(has('TvShow', 'seasons'), 'seasons')} }
+    }
+  `;
+
+  const GET_WATCHLIST = caps.query('watchlist') ? gql`
+    query GetWatchlist {
+      watchlist { id status ${watchlistContent} }
+    }
+  ` : null;
+
+  const ADD_TO_WATCHLIST = caps.mutation('addToWatchlist') ? gql`
+    mutation AddToWatchlist($subject: WatchlistSubjectInput!, $status: WatchStatus) {
+      addToWatchlist(subject: $subject, status: $status) { id status ${watchlistContent} }
+    }
+  ` : null;
+
+  const SET_WATCH_STATUS = caps.mutation('setWatchStatus') ? gql`
+    mutation SetWatchStatus($itemId: ID!, $status: WatchStatus!) {
+      setWatchStatus(itemId: $itemId, status: $status) { id status }
+    }
+  ` : null;
+
+  const REMOVE_FROM_WATCHLIST = caps.mutation('removeFromWatchlist') ? gql`
+    mutation RemoveFromWatchlist($itemId: ID!) { removeFromWatchlist(itemId: $itemId) }
+  ` : null;
+
   // ---- mutations ----------------------------------------------------------
 
   const authResponse = 'token user { id username email role }';
@@ -268,6 +309,7 @@ export function buildDocuments(caps) {
     GET_PEOPLE, GET_PERSON,
     GET_TV_SHOWS, GET_TV_SHOW,
     TMDB_SEARCH,
+    GET_WATCHLIST, ADD_TO_WATCHLIST, SET_WATCH_STATUS, REMOVE_FROM_WATCHLIST,
     LOGIN, REGISTER,
     CREATE_MOVIE, UPDATE_MOVIE, DELETE_MOVIE,
     CREATE_PERSON, UPDATE_PERSON, DELETE_PERSON, CREATE_REVIEW, DELETE_REVIEW,

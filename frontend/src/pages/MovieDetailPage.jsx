@@ -4,6 +4,7 @@ import { useCaps } from '../context/CapabilitiesContext';
 import { NOOP } from '../graphql/documents';
 import { useAuth } from '../context/AuthContext';
 import ReviewSection from '../components/ReviewSection';
+import WatchlistButton from '../components/WatchlistButton';
 import FeaturePending from '../components/FeaturePending';
 
 const GENRE_COLORS = {
@@ -141,6 +142,11 @@ export default function MovieDetailPage() {
               </div>
             </div>
           )}
+
+          {/* Watch list */}
+          <div className="mt-4">
+            <WatchlistButton movieId={movie.id} />
+          </div>
 
           {/* Plot */}
           {movie.plot && (
