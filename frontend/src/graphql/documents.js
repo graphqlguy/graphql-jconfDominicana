@@ -32,7 +32,10 @@ export function buildDocuments(caps) {
     when(has('Person', 'photoUrl'), 'photoUrl'),
   ].filter(Boolean).join(' ');
 
-  const reviewFields = 'id score comment createdAt user { id username }';
+  // email is a field-level-authorized field: the server returns it only to an admin
+  // or the user themselves, and null otherwise. We request it when it exists and
+  // simply show whatever comes back.
+  const reviewFields = `id score comment createdAt user { id username ${when(has('User', 'email'), 'email')} }`;
 
   const movieListFields = `
     ${movieCore}
