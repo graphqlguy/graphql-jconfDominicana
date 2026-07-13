@@ -391,4 +391,3 @@ Map<Person, List<TvShowCast>> tvShowCastCredits(List<Person> people) {
 Both are `@BatchMapping` resolvers so a page of people triggers one query per relationship, not one per person. Restart, open a director's page, and their shows appear alongside their films.
 
 </details>
-</content>
