@@ -1,6 +1,7 @@
 package com.graphqlguy.moviedb.movie;
 
 import com.graphqlguy.moviedb.person.Person;
+import com.graphqlguy.moviedb.shared.Content;
 import com.graphqlguy.moviedb.shared.Genre;
 import com.graphqlguy.moviedb.shared.SearchResult;
 import jakarta.persistence.*;
@@ -18,7 +19,7 @@ import java.util.List;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Movie implements SearchResult {
+public class Movie implements SearchResult, Content {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
