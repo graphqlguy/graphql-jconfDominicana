@@ -21,10 +21,22 @@ type Query {
     country(code: ID!): Country
     """Search TMDB (The Movie Database) for movies by title"""
     tmdbSearch(title: String!): [TmdbResult!]!
+    tvShow(id: ID!): TvShow
+    tvShows(page: Int = 0 @Range(min: 0), size: Int = 10 @Range(min: 1, max: 100)): TvShowPage!
+    """The signed-in user's watch list."""
+    watchlist: [WatchlistItem!]!
 }
 
 """Union of Movie and Person for cross-type search"""
 union SearchResult = Movie | Person
+
+"""Something watchable: the fields a Movie and a TV show have in common."""
+interface Content {
+    title: String!
+    genre: Genre
+    rating: Float
+    posterUrl: String
+}
 
 """
     Custom Movie type
@@ -32,7 +44,7 @@ union SearchResult = Movie | Person
     Triple quotes allow multiline documentation.
 """
 # We will expand the Movie type as we progress through the tutorial
-type Movie {
+type Movie implements Content {
     id: ID!
     title: String!
     releaseYear: Int!
@@ -129,6 +141,10 @@ type Person {
     directedMovies: [Movie!]!
     """This person's acting credits in movies"""
     movieCastCredits: [MovieCast!]!
+    """TV shows this person created"""
+    createdShows: [TvShow!]!
+    """This person's acting credits in TV shows"""
+    tvShowCastCredits: [TvShowCast!]!
 }
 
 
@@ -193,6 +209,13 @@ type Mutation {
     login(input: LoginInput!): AuthResponse!
     """Create a new USER account and sign in immediately"""
     register(input: RegisterInput!): AuthResponse!
+
+    """Add a movie or TV show to the signed-in user's watch list."""
+    addToWatchlist(subject: WatchlistSubjectInput!, status: WatchStatus): WatchlistItem!
+    """Change a watch-list entry's status, e.g. mark it watched."""
+    setWatchStatus(itemId: ID!, status: WatchStatus!): WatchlistItem!
+    """Remove an entry from the watch list."""
+    removeFromWatchlist(itemId: ID!): Boolean!
 }
 
 
@@ -267,4 +290,69 @@ input CreatePersonInput {
     name: String!
     birthYear: Int
     countryCode: CountryCode
+}
+
+"""A television show"""
+type TvShow implements Content {
+    id: ID!
+    title: String!
+    genre: Genre
+    "Average rating on a scale of 0-10"
+    rating: Float
+    posterUrl: String
+    startYear: Int!
+    "Null while the show is still airing"
+    endYear: Int
+    seasons: Int
+    plot: String
+    creators: [Person!]!
+    cast: [TvShowCast!]!
+    episodes: [Episode!]!
+}
+
+"""A single episode of a TV show"""
+type Episode {
+    id: ID!
+    seasonNumber: Int!
+    episodeNumber: Int!
+    title: String!
+    overview: String
+    "Runtime in minutes"
+    runtime: Int
+    airYear: Int
+}
+
+"""An actor's role in a TV show, linking a person to a character"""
+type TvShowCast {
+    id: ID!
+    characterName: String!
+    person: Person!
+    tvShow: TvShow!
+}
+
+"""A page of TV shows"""
+type TvShowPage {
+    content: [TvShow!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    size: Int!
+}
+
+"""A single entry in a user's watch list: a movie or a show, plus its status."""
+type WatchlistItem {
+    id: ID!
+    content: Content!
+    status: WatchStatus!
+}
+
+enum WatchStatus {
+    WANT_TO_WATCH
+    WATCHED
+}
+
+"""Identifies the title to add. @oneOf: provide exactly one of movieId or tvShowId."""
+input WatchlistSubjectInput @oneOf {
+    movieId: ID
+    tvShowId: ID
 }
