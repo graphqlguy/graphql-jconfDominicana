@@ -41,6 +41,11 @@ function ReviewCard({ review, currentUserId, isAdmin, onDelete }) {
           </div>
           <div>
             <span className="text-white text-sm font-medium">{review.user.username}</span>
+            {review.user.email && (
+              <span className="ml-2 text-xs text-zinc-500" title="Visible to admins and the user themselves">
+                {review.user.email}
+              </span>
+            )}
             <div className="text-zinc-500 text-xs">{new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
           </div>
         </div>
