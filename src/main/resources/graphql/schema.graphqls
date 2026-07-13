@@ -201,7 +201,7 @@ type Mutation {
 
 type Subscription {
     """Live notifications when reviews are posted, pushed over WebSocket. Optionally filter by movieId."""
-    reviewAdded(movieId: ID): ReviewNotification!
+    reviewAdded(movieId: ID, tvShowId: ID): ReviewNotification!
 }
 
 """Notification pushed to subscribers when a review is created"""
