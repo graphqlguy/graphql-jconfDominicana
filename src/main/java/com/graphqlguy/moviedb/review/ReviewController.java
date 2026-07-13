@@ -62,9 +62,10 @@ public class ReviewController {
     }
 
     @SubscriptionMapping
-    Flux<ReviewNotification> reviewAdded(@Argument Long movieId) {
+    Flux<ReviewNotification> reviewAdded(@Argument Long movieId, @Argument Long tvShowId) {
         return reviewPublisher.flux()
-                .filter(notification -> movieId == null || movieId.equals(notification.movieId()));
+                .filter(notification -> movieId == null || movieId.equals(notification.movieId()))
+                .filter(notification -> tvShowId == null || tvShowId.equals(notification.tvShowId()));
     }
 
     @MutationMapping
