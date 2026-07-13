@@ -12,6 +12,8 @@ import com.graphqlguy.moviedb.user.AppUser;
 import com.graphqlguy.moviedb.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,20 +26,22 @@ public class ReviewService {
     private final MovieRepository movieRepository;
     private final TvShowRepository tvShowRepository;
     private final UserRepository userRepository;
+    private final ReviewPublisher reviewPublisher;
     private final LatencySimulator latencySimulator;
 
     @Transactional
+    @PreAuthorize("isAuthenticated()")
     public Review createReview(CreateReviewInput input, String username) {
         latencySimulator.pause();
         AppUser user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("No user record found for: " + username));
+                .orElseThrow(() -> new IllegalStateException("Authenticated user has no matching record: " + username));
 
         Review.ReviewBuilder review = Review.builder()
                 .user(user)
                 .score(input.score())
                 .comment(input.comment());
 
-        // Exactly one of movieId/tvShowId is expected to be set
+        // The @oneOf directive guarantees exactly one of movieId/tvShowId is set
         if (input.subject().movieId() != null) {
             Long movieId = parseId(input.subject().movieId(), "movieId");
             Movie movie = movieRepository.findById(movieId)
@@ -64,6 +68,7 @@ public class ReviewService {
             // above; the unique constraint on the reviews table catches the loser here.
             throw new DuplicateReviewException();
         }
+        reviewPublisher.publish(ReviewNotification.of(saved));
         return saved;
     }
 
@@ -71,17 +76,26 @@ public class ReviewService {
         try {
             return Long.parseLong(rawId);
         } catch (NumberFormatException e) {
-            // IDs arrive as strings, so garbage like "abc" reaches us here;
-            // classify it as bad input rather than an unexpected 500.
+            // The GraphQL ID scalar accepts any string, so garbage like "abc" reaches
+            // us here; classify it as bad input rather than an unexpected 500.
             throw new InvalidInputException(field, "must be a numeric ID");
         }
     }
 
     @Transactional
-    public DeleteReviewResponse deleteReview(Long reviewId) {
+    @PreAuthorize("isAuthenticated()")
+    public DeleteReviewResponse deleteReview(Long reviewId, String username) {
         latencySimulator.pause();
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("Review", reviewId));
+        AppUser user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user has no matching record: " + username));
+
+        boolean isOwner = review.getUser().getId().equals(user.getId());
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedException("You can only delete your own reviews");
+        }
 
         reviewRepository.delete(review);
         return new DeleteReviewResponse(true, reviewId);

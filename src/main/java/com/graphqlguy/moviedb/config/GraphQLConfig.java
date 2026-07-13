@@ -17,6 +17,7 @@ public class GraphQLConfig {
                 .onValidationErrorStrategy(OnValidationErrorStrategy.RETURN_NULL)
                 .build();
         return wiringBuilder -> wiringBuilder
+                .scalar(ExtendedScalars.DateTime)
                 .scalar(ExtendedScalars.CountryCode)
                 .directiveWiring(new ValidationSchemaWiring(validationRules));
     }
