@@ -1,5 +1,6 @@
 
 
+scalar DateTime
 scalar CountryCode
 
 directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
@@ -61,6 +62,9 @@ type Movie implements Content {
     communityRating: CommunityRating
     directors: [Person!]!
     cast: [MovieCast!]!
+    reviews: [Review!]!
+    """Number of reviews - resolved as a grouped COUNT via @BatchMapping"""
+    reviewCount: Int!
 }
 
 enum Genre {
@@ -210,6 +214,11 @@ type Mutation {
     """Create a new USER account and sign in immediately"""
     register(input: RegisterInput!): AuthResponse!
 
+    """Submit a review for a movie or TV show (one per user per title)"""
+    createReview(input: CreateReviewInput!): Review!
+    """Delete a review (owner or admin only)"""
+    deleteReview(id: ID!): DeleteReviewResponse!
+
     """Add a movie or TV show to the signed-in user's watch list."""
     addToWatchlist(subject: WatchlistSubjectInput!, status: WatchStatus): WatchlistItem!
     """Change a watch-list entry's status, e.g. mark it watched."""
@@ -308,6 +317,7 @@ type TvShow implements Content {
     creators: [Person!]!
     cast: [TvShowCast!]!
     episodes: [Episode!]!
+    reviews: [Review!]!
 }
 
 """A single episode of a TV show"""
@@ -355,4 +365,54 @@ enum WatchStatus {
 input WatchlistSubjectInput @oneOf {
     movieId: ID
     tvShowId: ID
+}
+
+"""A user's review of a movie or TV show"""
+type Review {
+    id: ID!
+    """Rating from 1 to 10"""
+    score: Int!
+    comment: String
+    createdAt: DateTime!
+    user: User!
+}
+
+type Subscription {
+    """Live notifications when reviews are posted, pushed over WebSocket. Optionally filter by movieId or tvShowId."""
+    reviewAdded(movieId: ID, tvShowId: ID): ReviewNotification!
+}
+
+"""Notification pushed to subscribers when a review is created"""
+type ReviewNotification {
+    review: Review!
+    """Set when the review targets a movie"""
+    movieId: ID
+    """Set when the review targets a TV show"""
+    tvShowId: ID
+    """Title of the reviewed movie or show"""
+    title: String!
+}
+
+"""
+The review target. @oneOf makes this an input union: exactly one of the
+fields must be provided, enforced by GraphQL itself before any resolver runs.
+"""
+input ReviewSubjectInput @oneOf {
+    movieId: ID
+    tvShowId: ID
+}
+
+"""Input for creating a review of a movie or TV show"""
+input CreateReviewInput {
+    subject: ReviewSubjectInput!
+    """Rating from 1 to 10"""
+    score: Int! @Range(min: 1, max: 10)
+    comment: String @Size(max: 2000)
+}
+
+"""Result of deleting a review."""
+type DeleteReviewResponse {
+    success: Boolean!
+    """ID of the deleted review, or null if nothing was deleted."""
+    deletedId: ID
 }
