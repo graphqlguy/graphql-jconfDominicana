@@ -16,6 +16,7 @@ const INTROSPECTION = `
           name
           args { name }
         }
+        possibleTypes { name }
       }
     }
   }
@@ -55,6 +56,8 @@ export async function fetchCapabilities() {
 
   // typeName -> (fieldName -> Set of arg names)
   const typeFields = new Map();
+  // union/interface name -> Set of member (possible) type names
+  const possibleTypes = new Map();
   for (const type of schema.types ?? []) {
     if (!type.name || type.name.startsWith('__')) continue;
     const fields = new Map();
@@ -62,6 +65,9 @@ export async function fetchCapabilities() {
       fields.set(field.name, new Set((field.args ?? []).map(a => a.name)));
     }
     typeFields.set(type.name, fields);
+    if (type.possibleTypes?.length) {
+      possibleTypes.set(type.name, new Set(type.possibleTypes.map(t => t.name)));
+    }
   }
 
   const rootName = {
@@ -80,5 +86,7 @@ export async function fetchCapabilities() {
     subscription: name => rootFields('subscription').has(name),
     // arg('query', 'movies', 'filter') - does the root field accept this argument?
     arg: (kind, field, arg) => rootFields(kind).get(field)?.has(arg) ?? false,
+    // unionMember('SearchResult', 'TvShow') - is a type a member of a union/interface?
+    unionMember: (abstractType, member) => possibleTypes.get(abstractType)?.has(member) ?? false,
   };
 }
