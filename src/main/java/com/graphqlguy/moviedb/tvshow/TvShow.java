@@ -1,6 +1,7 @@
 package com.graphqlguy.moviedb.tvshow;
 
 import com.graphqlguy.moviedb.person.Person;
+import com.graphqlguy.moviedb.shared.Content;
 import com.graphqlguy.moviedb.shared.Genre;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -34,7 +35,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tv_shows")
-public class TvShow {
+public class TvShow implements Content {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
