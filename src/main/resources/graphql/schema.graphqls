@@ -1,5 +1,7 @@
 
 
+scalar CountryCode
+
 directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Size.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
@@ -15,6 +17,10 @@ type Query {
     person(id: ID!): Person
     searchPeople(name: String!): [Person!]!
     search(query: String!): [SearchResult!]!
+    """Look up a country by its ISO 3166-1 alpha-2 code, e.g. CZ"""
+    country(code: ID!): Country
+    """Search TMDB (The Movie Database) for movies by title"""
+    tmdbSearch(title: String!): [TmdbResult!]!
 }
 
 """Union of Movie and Person for cross-type search"""
@@ -39,6 +45,8 @@ type Movie {
     posterUrl: String
     "The Movie Database (TMDB) external identifier"
     tmdbId: Int
+    """Live community rating from TMDB; null when the movie has no tmdbId or TMDB is unavailable"""
+    communityRating: CommunityRating
     directors: [Person!]!
     cast: [MovieCast!]!
 }
@@ -113,6 +121,10 @@ type Person {
     biography: String
     """Portrait image URL (TMDB)"""
     photoUrl: String
+    """ISO 3166-1 alpha-2 country code"""
+    countryCode: CountryCode
+    """Country details resolved live from the external countries GraphQL API"""
+    country: Country
     """Movies this person directed"""
     directedMovies: [Movie!]!
     """This person's acting credits in movies"""
@@ -125,6 +137,32 @@ type MovieCast {
     characterName: String!
     person: Person!
     movie: Movie!
+}
+
+type Country {
+    "ISO 3166-1 alpha-2 code, e.g. CZ"
+    code: ID!
+    name: String!
+    emoji: String
+    capital: String
+    currency: String
+}
+
+"""A movie search result from TMDB (The Movie Database)"""
+type TmdbResult {
+    tmdbId: Int!
+    title: String!
+    releaseYear: Int
+    overview: String
+    posterUrl: String
+    """TMDB community vote average on a 0-10 scale"""
+    rating: Float
+}
+
+type CommunityRating {
+    """Vote average on a 0-10 scale"""
+    voteAverage: Float!
+    voteCount: Int!
 }
 
 type AuthResponse {
@@ -222,11 +260,11 @@ input UpdatePersonInput {
     id: ID!
     name: String
     birthYear: Int
-    countryCode: String
+    countryCode: CountryCode
 }
 
 input CreatePersonInput {
     name: String!
     birthYear: Int
-    countryCode: String
+    countryCode: CountryCode
 }

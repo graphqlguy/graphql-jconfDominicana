@@ -1,5 +1,6 @@
 package com.graphqlguy.moviedb.config;
 
+import graphql.scalars.ExtendedScalars;
 import graphql.validation.rules.OnValidationErrorStrategy;
 import graphql.validation.rules.ValidationRules;
 import graphql.validation.schemawiring.ValidationSchemaWiring;
@@ -16,6 +17,7 @@ public class GraphQLConfig {
                 .onValidationErrorStrategy(OnValidationErrorStrategy.RETURN_NULL)
                 .build();
         return wiringBuilder -> wiringBuilder
+                .scalar(ExtendedScalars.CountryCode)
                 .directiveWiring(new ValidationSchemaWiring(validationRules));
     }
 }
