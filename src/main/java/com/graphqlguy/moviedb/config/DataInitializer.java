@@ -18,6 +18,9 @@ import com.graphqlguy.moviedb.user.AppUser;
 import com.graphqlguy.moviedb.user.Role;
 import com.graphqlguy.moviedb.user.UserRepository;
 import com.graphqlguy.moviedb.shared.Genre;
+import com.graphqlguy.moviedb.watchlist.WatchStatus;
+import com.graphqlguy.moviedb.watchlist.WatchlistItem;
+import com.graphqlguy.moviedb.watchlist.WatchlistItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -40,6 +43,7 @@ public class DataInitializer {
     private final EpisodeRepository episodeRepo;
     private final UserRepository userRepo;
     private final ReviewRepository reviewRepo;
+    private final WatchlistItemRepository watchlistRepo;
     private final PasswordEncoder passwordEncoder;
 
     private static final String BASE = "https://image.tmdb.org/t/p/w500/";
@@ -745,6 +749,14 @@ public class DataInitializer {
                     .comment("The blueprint for every sitcom since.").build(),
                 Review.builder().user(admin).tvShow(got).score(7)
                     .comment("Amazing until the final season.").build()));
+
+            // ── Watch lists (max one entry per user per title) ───────────
+            watchlistRepo.saveAll(List.of(
+                WatchlistItem.builder().user(admin).movie(inception).status(WatchStatus.WATCHED).build(),
+                WatchlistItem.builder().user(admin).tvShow(got).status(WatchStatus.WANT_TO_WATCH).build(),
+                WatchlistItem.builder().user(user).movie(theMatrix).status(WatchStatus.WATCHED).build(),
+                WatchlistItem.builder().user(user).movie(shawshank).status(WatchStatus.WANT_TO_WATCH).build(),
+                WatchlistItem.builder().user(user).tvShow(seinfeld).status(WatchStatus.WANT_TO_WATCH).build()));
 
                 log.info("Seeding complete. {} movies, {} TV shows and {} reviews created.",
                     movieRepo.count(), tvShowRepo.count(), reviewRepo.count());
