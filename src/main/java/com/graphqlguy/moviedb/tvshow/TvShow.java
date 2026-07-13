@@ -1,6 +1,7 @@
 package com.graphqlguy.moviedb.tvshow;
 
 import com.graphqlguy.moviedb.person.Person;
+import com.graphqlguy.moviedb.shared.Content;
 import com.graphqlguy.moviedb.shared.Genre;
 import com.graphqlguy.moviedb.shared.SearchResult;
 import jakarta.persistence.CascadeType;
@@ -25,7 +26,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "tv_shows")
-public class TvShow implements SearchResult {
+public class TvShow implements SearchResult, Content {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
