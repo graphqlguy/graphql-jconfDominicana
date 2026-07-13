@@ -5,16 +5,17 @@ scalar CountryCode
 
 directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Size.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Pattern(regexp: String!, message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 # The single entry point of our API. This line is a comment, by the way:
 # comments start with # and are only for people reading this file.
 type Query {
     moviesAll: [Movie!]! @deprecated(reason: "Unbounded. Use 'movies' instead.")
     movie(id: ID!): Movie
-    movies(filter: MovieFilter, page: Int = 0, size: Int = 10, sort: MovieSort): MoviePage!
+    movies(filter: MovieFilter, page: Int = 0 @Range(min: 0), size: Int = 10 @Range(min: 1, max: 100), sort: MovieSort): MoviePage!
     moviesByIds(ids: [ID!]!): [Movie]
     searchMovies(title: String!): [Movie]
-    people(page: Int = 0, size: Int = 20): PersonPage!
+    people(page: Int = 0 @Range(min: 0), size: Int = 20 @Range(min: 1, max: 100)): PersonPage!
     person(id: ID!): Person
     searchPeople(name: String!): [Person!]!
     search(query: String!): [SearchResult!]!
@@ -29,7 +30,7 @@ type Query {
 }
 
 """Union of Movie and Person for cross-type search"""
-union SearchResult = Movie | Person
+union SearchResult = Movie | Person | TvShow
 
 """Something watchable: the fields a Movie and a TV show have in common."""
 interface Content {
@@ -235,9 +236,9 @@ input LoginInput {
 
 """Input for creating an account; field rules enforced by validation directives"""
 input RegisterInput {
-    username: String
-    email: String
-    password: String
+    username: String! @Size(min: 3, max: 50)
+    email: String! @Size(max: 120) @Pattern(regexp: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+    password: String! @Size(min: 6, max: 100)
 }
 
 """Result of deleting a movie."""
@@ -276,15 +277,15 @@ input CreateMovieInput {
 """Input for updating a movie; omitted fields are left unchanged."""
 input UpdateMovieInput {
     id: ID!
-    title: String
-    releaseYear: Int
+    title: String @Size(min: 1, max: 200)
+    releaseYear: Int @Range(min: 1888, max: 2100)
     genre: Genre
     """Rating from 0.0 to 10.0"""
-    rating: Float
+    rating: Float @Range(min: 0, max: 10)
     """Runtime in minutes"""
-    runtime: Int
-    plot: String
-    posterUrl: String
+    runtime: Int @Range(min: 1, max: 600)
+    plot: String @Size(max: 2000)
+    posterUrl: String @Size(max: 500)
     tmdbId: Int
 }
 

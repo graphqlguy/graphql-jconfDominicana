@@ -38,6 +38,14 @@ public class GlobalExceptionHandler {
     }
 
     @GraphQlExceptionHandler
+    public GraphQLError handleDuplicateReview(DuplicateReviewException ex, DataFetchingEnvironment env) {
+        return GraphqlErrorBuilder.newError(env)
+                .message(ex.getMessage())
+                .errorType(ErrorType.BAD_REQUEST)
+                .build();
+    }
+
+    @GraphQlExceptionHandler
     public GraphQLError handleAccessDenied(AccessDeniedException ex, DataFetchingEnvironment env) {
         return GraphqlErrorBuilder.newError(env)
                 .message("You are not authorized to perform this action")
