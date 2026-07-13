@@ -106,6 +106,7 @@ export function buildDocuments(caps) {
         search(query: $query) {
           ... on Movie { __typename ${movieCore} }
           ... on Person { __typename ${personRef} }
+          ${when(caps.unionMember('SearchResult', 'TvShow'), '... on TvShow { __typename id title genre rating posterUrl startYear endYear }')}
         }
       }
     `;
