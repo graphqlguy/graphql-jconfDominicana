@@ -20,11 +20,16 @@ spring:
     properties:
       hibernate:
         format_sql: false
-  threads:
-    virtual:
-      enabled: false
   graphql:
     graphiql:
+      enabled: true
+    websocket:
+      path: /graphql
+    cors:
+      allowed-origins: http://localhost:5173
+      allow-credentials: true
+  threads:
+    virtual:
       enabled: true
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
@@ -37,3 +42,9 @@ tmdb:
   api-key: ${TMDB_API_KEY:}
   base-url: https://api.themoviedb.org/3
   image-base-url: https://image.tmdb.org/t/p/w500
+graphql:
+  # Instrumentation configuration
+  # 15, not 10: the standard introspection query is depth 13, so anything lower
+  # breaks GraphiQL docs/autocomplete and codegen tooling.
+  max-query-depth: 15
+  slow-resolver-threshold-ms: 100
