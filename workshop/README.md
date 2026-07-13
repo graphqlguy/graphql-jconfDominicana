@@ -20,5 +20,6 @@ The frontend is schema-aware: it asks the API what exists (via GraphQL introspec
 6. [Input validation](06-validation.md) - schema-directive validation, wiring the extended-validation library, Bean Validation
 7. [Search and unions](07-search-and-unions.md) - typed search queries, union types, inline fragments, union vs interface
 8. [Custom scalars and external APIs](08-custom-scalars-and-external-apis.md) - the extended-scalars library, CountryCode, calling an external GraphQL API, caching and graceful failure
+9. [TV shows, interfaces, and a watch list](09-tv-shows-interfaces-and-watch-list.md) - exposing TV shows, interface types, `@oneOf` input types, a per-user authenticated feature
 
 More classes are added as the workshop progresses.
