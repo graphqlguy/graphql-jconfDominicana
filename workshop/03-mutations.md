@@ -83,9 +83,8 @@ type Mutation {
 type DeletePersonResponse {
     success: Boolean!
     error: String
-    deletedId: String
+    deletedId: ID
 }
-
 ```
 
 Three details to notice:
@@ -265,7 +264,7 @@ public record UpdateMovieInput(
 }
 ```
 
-Now the service can see all three states, which raises a policy question: *should* every field be clearable? No. The schema already answers it: `Movie.title` is `String!`, so a null title must never reach the database, while `plot` is nullable and clearing it is legitimate. We encode exactly that policy with two helpers in `MovieService`:
+Now the service can see all three states, which raises a policy question: *should* every field be clearable? No. The schema already answers it: `Movie.title` is `String!`, so a null title must never reach the database, while `plot` is nullable and clearing it is legitimate. We encode exactly that policy with two helpers in `MovieService`. They replace the starter's existing null-check `applyIfPresent` helper — delete it as you add these; its plain-value signature cannot tell the three states apart:
 
 `src/main/java/com/graphqlguy/moviedb/movie/MovieService.java`
 
@@ -350,7 +349,7 @@ Person createPerson(@Argument @Valid CreatePersonInput input) {
 
 ### Exercise 2: updatePerson
 
-Add an `updatePerson(input: UpdatePersonInput!): Person!` mutation and apply the full step-5 treatment: upgrade `UpdatePersonInput` to `ArgumentValue` fields and give `PersonService` the same two helpers. Mind the policy: `Person.name` is `String!` in the schema, so it must never be cleared, while `birthYear` and `countryCode` are fair game for an explicit `null`. As the finishing touch, make the service reject a name that was *provided* as null or blank (hint: `isOmitted()`), and confirm in GraphiQL that `updatePerson(input: { id: 1, name: null })` returns an error instead of silently doing nothing.
+Add an `updatePerson(input: UpdatePersonInput!): Person!` mutation and apply the full step-5 treatment: upgrade `UpdatePersonInput` to `ArgumentValue` fields and give `PersonService` the same two helpers (again replacing the existing null-check `applyIfPresent`). Mind the policy: `Person.name` is `String!` in the schema, so it must never be cleared, while `birthYear` and `countryCode` are fair game for an explicit `null`. As the finishing touch, make the service reject a name that was *provided* as null or blank (hint: `isOmitted()`), and confirm in GraphiQL that `updatePerson(input: { id: 1, name: null })` returns an error instead of silently doing nothing.
 
 <details>
 <summary>Show solution</summary>
