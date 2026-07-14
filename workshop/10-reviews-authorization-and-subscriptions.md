@@ -139,6 +139,16 @@ public class ReviewController {
 }
 ```
 
+Reviews are for signed-in users, exactly like the watch list, so the service method gets the same guard. Add it to the scaffolding `ReviewService.createReview`:
+
+```java
+@Transactional
+@PreAuthorize("isAuthenticated()")
+public Review createReview(CreateReviewInput input, String username) {
+```
+
+Without it, an anonymous caller reaches the service as Spring Security's pseudo-user `anonymousUser`, whose user lookup fails as an opaque error; with it, the call is rejected cleanly before the method runs.
+
 Restart, sign in, and post a review:
 
 ```graphql
@@ -221,7 +231,7 @@ Try it. Query a movie's reviews while signed in as `admin` and the emails are pr
 
 ## 3. Subscriptions: live updates
 
-A query pulls data once. A **subscription** is a long-lived stream: the client opens a connection and the server pushes a value every time something happens. Spring for GraphQL runs subscriptions over WebSocket, on the same `/graphql` path.
+A query pulls data once. A **subscription** is a long-lived stream: the client opens a connection and the server pushes a value every time something happens. Spring for GraphQL serves subscriptions over WebSocket on the same `/graphql` path; we enable that endpoint at the end of this section.
 
 We push a notification whenever a review is created. First, an in-memory publisher, a small bridge between the mutation that creates a review and the stream that subscribers read.
 
@@ -249,7 +259,7 @@ public class ReviewPublisher {
 }
 ```
 
-The `ReviewNotification` (scaffolding) carries the new review plus enough context to filter and display it:
+Next to it, create the `ReviewNotification` record. It carries the new review plus enough context to filter and display it:
 
 ```java
 public record ReviewNotification(Review review, Long movieId, Long tvShowId, String title) {
@@ -262,12 +272,12 @@ public record ReviewNotification(Review review, Long movieId, Long tvShowId, Str
 }
 ```
 
-`createReview` publishes after it saves. Add one line to the service:
+`createReview` publishes after it saves. Inject the publisher into the service (`private final ReviewPublisher reviewPublisher;`) and add the publish call at the end of the method — after the existing `try/catch` that guards against duplicate reviews, and before the return:
 
 ```java
-Review saved = reviewRepository.save(review.build());
-reviewPublisher.publish(ReviewNotification.of(saved));
-return saved;
+        // ...the existing save, inside its duplicate-review try/catch...
+        reviewPublisher.publish(ReviewNotification.of(saved));
+        return saved;
 ```
 
 The subscription itself is a resolver that returns a `Flux`. It is annotated `@SubscriptionMapping` and lives on the `ReviewController`. The optional `movieId` argument lets a client subscribe only to reviews of the movie it is currently viewing.
@@ -297,7 +307,16 @@ type ReviewNotification {
 }
 ```
 
-The WebSocket endpoint is already configured in `application.yaml` (`spring.graphql.websocket.path: /graphql`). Restart, and try it with two GraphiQL tabs: in one, run the subscription and leave it open:
+One piece of configuration remains: the WebSocket endpoint does not exist until you ask for it. Add it under the existing `spring.graphql` key in `application.yaml`:
+
+```yaml
+spring:
+  graphql:
+    websocket:
+      path: /graphql
+```
+
+A subtlety worth knowing: GraphQL subscriptions have more than one transport. GraphiQL reaches them over plain HTTP (server-sent events), which works even without this entry — but the frontend connects with the `graphql-ws` protocol over WebSocket, and without the endpoint its live updates silently fail. Restart, and try it with two GraphiQL tabs: in one, run the subscription and leave it open:
 
 ```graphql
 subscription {
