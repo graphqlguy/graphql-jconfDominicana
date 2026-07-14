@@ -19,10 +19,12 @@ The service layer already knows how to search: `MovieService.searchByTitle` and 
 ```graphql
 type Query {
     # ...existing queries...
-    searchMovies(title: String!): [Movie]
+    searchMovies(title: String!): [Movie!]!
     searchPeople(name: String!): [Person!]!
 }
 ```
+
+Both return `[...!]!`, the same shape as class 1's `moviesAll`: a search that matches nothing returns an empty list, never `null`, and the list never contains `null` entries.
 
 The resolvers are as thin as any we have written.
 
