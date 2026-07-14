@@ -171,7 +171,7 @@ type TvShow implements Content {
 }
 ```
 
-A type that implements an interface must declare every field the interface lists, which `Movie` and `TvShow` already do. On the Java side, resolution works just as it did for the union: the starter provides a `Content` marker interface in the `shared` package, `Movie` and `TvShow` already implement it, and Spring for GraphQL maps a `Movie` instance to the `Movie` type and a `TvShow` instance to the `TvShow` type by matching the class name. No manual type resolver is needed.
+A type that implements an interface must declare every field the interface lists, which `Movie` and `TvShow` already do. On the Java side, resolution works just as it did for the union: the starter provides a `Content` interface in the `shared` package that declares the four shared accessors (so the contract is compiler-checked, not just a marker), `Movie` and `TvShow` already implement it, and Spring for GraphQL maps a `Movie` instance to the `Movie` type and a `TvShow` instance to the `TvShow` type by matching the class name. No manual type resolver is needed.
 
 > **A note on nullability.** `Content.genre` is nullable (`Genre`), and both `Movie` and `TvShow` declare `genre: Genre` to match. An implementing type is allowed to be *stricter* than its interface, so a type could legally declare `genre: Genre!` while the interface stays nullable. That is common in real schemas, where types evolve separately and drift apart. It matters for one reason we will see in a moment: if two types declare a shared field with different nullability, a client cannot select that field inside each fragment, because the two response shapes conflict. Reading shared fields off the interface avoids the problem entirely, which is another reason to prefer it.
 
@@ -244,6 +244,7 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -255,6 +256,7 @@ public class WatchlistController {
 
     private final WatchlistService watchlistService;
 
+    @PreAuthorize("isAuthenticated()")
     @QueryMapping
     List<WatchlistItem> watchlist(Principal principal) {
         return watchlistService.findForUser(principal.getName());
@@ -268,6 +270,7 @@ public class WatchlistController {
         return item.getMovie() != null ? item.getMovie() : item.getTvShow();
     }
 
+    @PreAuthorize("isAuthenticated()")
     @MutationMapping
     WatchlistItem addToWatchlist(@Argument WatchlistSubjectInput subject,
                                  @Argument WatchStatus status,
@@ -275,11 +278,13 @@ public class WatchlistController {
         return watchlistService.addToWatchlist(subject, status, principal.getName());
     }
 
+    @PreAuthorize("isAuthenticated()")
     @MutationMapping
     WatchlistItem setWatchStatus(@Argument Long itemId, @Argument WatchStatus status, Principal principal) {
         return watchlistService.setStatus(itemId, status, principal.getName());
     }
 
+    @PreAuthorize("isAuthenticated()")
     @MutationMapping
     boolean removeFromWatchlist(@Argument Long itemId, Principal principal) {
         return watchlistService.removeFromWatchlist(itemId, principal.getName());
@@ -288,6 +293,8 @@ public class WatchlistController {
 ```
 
 The `content` resolver is where the interface pays off. It returns `Content`, and because `Movie` and `TvShow` both implement it, either fits, and Spring resolves the concrete GraphQL type from the class. The `Principal` parameter is the signed-in user, injected by Spring Security from the JWT you built in Class 4; the service uses it to scope the list to that user and to enforce that you can only change your own entries. The `WatchlistService` that does this, along with the entity and repository, is scaffolding, so this controller is all the GraphQL you add.
+
+Note the `@PreAuthorize("isAuthenticated()")` on every operation. This is the method security from Class 4 with a new expression: not "is this caller an administrator" but simply "is this caller signed in at all" — the right rule for a personal feature that any user may use but no anonymous visitor can. It is not optional decoration: without it, an anonymous call sails past security straight into `principal.getName()`, and the resulting `NullPointerException` surfaces as an opaque `INTERNAL_ERROR`. With it, the caller is rejected cleanly, before the resolver ever runs. Try it: run the `watchlist` query below with an empty Headers tab and observe the clean security error, then sign in.
 
 ### Querying it: shared fields off the interface
 
