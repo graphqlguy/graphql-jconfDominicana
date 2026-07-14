@@ -35,6 +35,8 @@ spring:
       enabled: true
 ```
 
+The file already contains a `spring:` section, so nest the `graphql:` block under that existing key instead of pasting a second `spring:` entry at the end of the file — YAML does not allow duplicate keys, and the application would refuse to start.
+
 ## 3. Write your first schema
 
 This is the heart of schema-first development: we describe the API in the GraphQL Schema Definition Language (SDL), and only then implement it. Spring picks up any `.graphqls` file under `src/main/resources/graphql/`.
@@ -193,7 +195,7 @@ public class MovieController {
 > [!TIP]
 > If you are on the Lombok-free `main_no_lombok` branch, replace the Lombok annotation with a hand-written constructor that assigns the service field.
 
-Restart the application and run the query again. The response now contains all 52 seeded movies. Remove fields from the query, add others, and observe how the response always mirrors your selection exactly. That is GraphQL's core promise: **the client controls the shape of the response**.
+Restart the application and run the query again. The response now contains all 55 seeded movies. Remove fields from the query, add others, and observe how the response always mirrors your selection exactly. That is GraphQL's core promise: **the client controls the shape of the response**.
 
 ## 6. Fetch a single movie
 
@@ -240,7 +242,7 @@ query {
 
 ## 7. Evolve the API: filtering, sorting, pagination
 
-`moviesAll` returns the entire dataset in a single response. That works with 52 seeded movies, but it does not scale: with a real catalog, response times and memory usage grow without bound. We need pagination and filtering. But clients may already depend on `moviesAll`, so we can't just remove it.
+`moviesAll` returns the entire dataset in a single response. That works with 55 seeded movies, but it does not scale: with a real catalog, response times and memory usage grow without bound. We need pagination and filtering. But clients may already depend on `moviesAll`, so we can't just remove it.
 
 First we mark the old query as deprecated, then we add the better one. Schema first, and this step has two parts.
 
