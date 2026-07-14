@@ -204,16 +204,16 @@ The controller is a new class and, by now, entirely familiar:
 ```java
 package com.graphqlguy.moviedb.user;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.stereotype.Controller;
 
 @Controller
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @MutationMapping
     AuthResponse login(@Argument LoginInput input) {
