@@ -151,7 +151,7 @@ The other half of error handling needs no exceptions at all. Recall `deletePerso
 type DeletePersonResponse {
     success: Boolean!
     error: DeletePersonError
-    deletedId: String
+    deletedId: ID
 }
 
 enum DeletePersonError {
