@@ -252,7 +252,7 @@ type DeleteMovieResponse {
 type DeletePersonResponse {
     success: Boolean!
     error: DeletePersonError
-    deletedId: String
+    deletedId: ID
 }
 
 enum DeletePersonError {
