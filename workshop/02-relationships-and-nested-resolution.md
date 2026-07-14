@@ -140,7 +140,7 @@ query MyQuery {
 The cost is now clearly visible:
 
 - The response takes around **eleven seconds**: one paused service call for the `people` page, then ten more, one per person, strictly for `directedMovies`.
-- The console tells the same story in SQL: one `select` for the people, followed by ten near-identical `select` statements for movies, differing only in the person id.
+- The console tells the same story in SQL: one `select` for the people page (plus its `count` query for the page metadata), followed by ten near-identical `select` statements for movies, differing only in the person id.
 
 Nothing is broken. Every resolver did its job correctly; the problem is that nobody looked at the query as a whole. GraphQL resolves field by field, and our `directedMovies` resolver cannot see that its ten invocations could have been a single `where person_id in (...)` query.
 
@@ -194,7 +194,7 @@ Under the hood, Spring registers a `DataLoader` for the field. During execution,
 Restart and run the exact query from step 3 again:
 
 - The response time drops from around **eleven seconds to around two**: one paused call for the `people` page, one for the entire batch.
-- The SQL log shows two `select` statements instead of eleven.
+- The SQL log shows two `select` statements instead of eleven (the page's `count` query appears in both runs).
 - The application log contains a single line: `Batch fetching directed movies for 10 people`.
 
 The schema did not change. Clients notice nothing except the speed: batch loading is a pure server-side optimization, which is exactly why it belongs in every GraphQL API from the start.
@@ -217,6 +217,21 @@ Map<Movie, List<Person>> directors(List<Movie> movies) {
 ```
 
 A movie list with directors now costs two service calls in total, regardless of page size. The rule of thumb this leaves us with: the default resolver is fine for scalar fields; for list relationships, batch from the start.
+
+### Turn the instrumentation back off
+
+Before moving on, restore both settings in `application.yaml`:
+
+```yaml
+spring:
+  jpa:
+    show-sql: false
+
+demo:
+  latency: 0s
+```
+
+They exist to make this class's demonstration visible; left on, every service call keeps pausing for a full second and the rest of the workshop (including the frontend) would crawl. You lose nothing: the batch resolvers announce themselves in the application log (`Batch fetching ...`) either way, so you can still confirm that your exercise solutions batch correctly.
 
 ## 5. Junction entities: modeling the cast
 
