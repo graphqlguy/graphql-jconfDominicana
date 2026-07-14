@@ -224,7 +224,6 @@ input LoginInput {
     password: String!
 }
 
-"""Input for creating an account; field rules enforced by validation directives"""
 input RegisterInput {
     username: String
     email: String
