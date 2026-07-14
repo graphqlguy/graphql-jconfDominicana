@@ -14,7 +14,7 @@ type Query {
     movie(id: ID!): Movie
     movies(filter: MovieFilter, page: Int = 0 @Range(min: 0), size: Int = 10 @Range(min: 1, max: 100), sort: MovieSort): MoviePage!
     moviesByIds(ids: [ID!]!): [Movie]
-    searchMovies(title: String!): [Movie]
+    searchMovies(title: String!): [Movie!]!
     people(page: Int = 0 @Range(min: 0), size: Int = 20 @Range(min: 1, max: 100)): PersonPage!
     person(id: ID!): Person
     searchPeople(name: String!): [Person!]!
