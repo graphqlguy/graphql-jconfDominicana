@@ -86,7 +86,7 @@ public class GraphQLConfig {
 }
 ```
 
-`RETURN_NULL` instructs the library that, when a field fails validation, it resolves to `null` and the failure is reported in the `errors` array, the partial-response behavior from class 5.
+`RETURN_NULL` instructs the library that, when a field fails validation, it resolves to `null` and the failure is reported in the `errors` array. How much of the response survives depends on the field's nullability: for a nullable field the rest of the response continues, the partial-response behavior from class 5; for a non-null field the `null` propagates upward, the rule from class 1.
 
 ## 4. Declare and apply the directives
 
@@ -130,12 +130,18 @@ Restart and submit the invalid mutation from step 1 again:
     "extensions": {
       "classification": { "type": "ExtendedValidationError", "constraint": "@Size" }
     }
+  }, {
+    "message": "/createMovie/input/releaseYear range must be between 1888 and 2100",
+    "path": ["createMovie"],
+    "extensions": {
+      "classification": { "type": "ExtendedValidationError", "constraint": "@Range" }
+    }
   } ],
-  "data": { "createMovie": null }
+  "data": null
 }
 ```
 
-The mutation is rejected before it reaches the service, and the error names the exact field and constraint that failed. Valid input is unaffected:
+The mutation is rejected before it reaches the service, and both violations are reported at once, each naming the exact field and constraint that failed. Note also that `data` is `null` rather than `{ "createMovie": null }`: the mutation returns `Movie!`, so the failed field cannot hold a `null`, and it propagates to the root, exactly as class 1's non-null rule prescribes. Valid input is unaffected:
 
 ```graphql
 mutation {
@@ -169,7 +175,7 @@ The guiding principle: validate as far out as the rule allows. Push structural c
 
 ## Exercise
 
-`UpdateMovieInput` and `RegisterInput` are still unvalidated. Constrain both with the same directives: give `UpdateMovieInput` the field limits of `CreateMovieInput` (its fields are optional, so a value must be valid only when present), and constrain `RegisterInput` so the username, email, and password cannot be empty or excessively long. The `RegisterInput` docstring already promises these rules; this makes the promise true.
+`UpdateMovieInput` and `RegisterInput` are still unvalidated. Constrain both with the same directives: give `UpdateMovieInput` the field limits of `CreateMovieInput` (its fields are optional, so a value must be valid only when present), and constrain `RegisterInput` so the username, email, and password cannot be empty or excessively long. While you are there, give `RegisterInput` a docstring that says the rules are enforced: the directives state the constraints, and the description states the intent, both visible to every client.
 
 <details>
 <summary>Show solution</summary>
@@ -191,6 +197,7 @@ input UpdateMovieInput {
     tmdbId: Int
 }
 
+"""Input for creating an account; field rules enforced by validation directives"""
 input RegisterInput {
     username: String @Size(min: 3, max: 50)
     email: String @Size(max: 120)
