@@ -57,7 +57,7 @@ return wiringBuilder -> wiringBuilder
 
 ### Declare and use the scalar
 
-A custom scalar must be declared in the schema before it can be referenced, with a bare `scalar` line. Then we use it where a country code appears: on the `Person` type and on both person input types. Replace the existing `countryCode: String` fields.
+A custom scalar must be declared in the schema before it can be referenced, with a bare `scalar` line. Then we use it where a country code appears: add the field to the `Person` type (the entity has carried a country code all along; the schema just never exposed it), and in both person input types replace the existing `countryCode: String` with the scalar.
 
 `src/main/resources/graphql/schema.graphqls`
 
@@ -66,6 +66,7 @@ scalar CountryCode
 
 type Person {
     # ...existing fields...
+    """ISO 3166-1 alpha-2 country code"""
     countryCode: CountryCode
 }
 
@@ -80,7 +81,7 @@ input UpdatePersonInput {
 }
 ```
 
-Nothing changes on the Java side: the `Person` entity still stores a `String`, and `CountryCode` serializes to and from a `String`. What changed is the contract. Restart the backend and read a person's code:
+Nothing changes on the Java side: the `Person` entity stores its country code as a plain `String`, and `CountryCode` serializes to and from a `String`. Restart the backend and read a person's code:
 
 ```graphql
 query {
@@ -88,7 +89,7 @@ query {
 }
 ```
 
-That returns `"GB"` as before. The difference shows up on input. Try to create a person with a code that is not a valid ISO country:
+That returns `"GB"`, straight from the entity. The scalar's difference shows up on input. Try to create a person with a code that is not a valid ISO country:
 
 ```graphql
 mutation {
@@ -115,7 +116,14 @@ First, what a country looks like, both in our schema and as a Java record to rec
 ```graphql
 type Query {
     # ...existing queries...
+    """Look up a country by its ISO 3166-1 alpha-2 code, e.g. CZ"""
     country(code: ID!): Country
+}
+
+type Person {
+    # ...existing fields...
+    """Country details resolved live from the external countries GraphQL API"""
+    country: Country
 }
 
 type Country {
@@ -127,6 +135,8 @@ type Country {
     currency: String
 }
 ```
+
+Note the second addition: `Person` gains a `country` field of the new type. The standalone query lets a client look up any country; the field is what enriches a person, and it is the one we will resolve with our own code below.
 
 `src/main/java/com/graphqlguy/moviedb/country/Country.java` (new)
 
@@ -354,14 +364,17 @@ The schema additions, and the two thin controllers that delegate to `TmdbService
 ```graphql
 type Query {
     # ...existing queries...
+    """Search TMDB (The Movie Database) for movies by title"""
     tmdbSearch(title: String!): [TmdbResult!]!
 }
 
 type Movie {
     # ...existing fields...
+    """Live community rating from TMDB; null when the movie has no tmdbId or TMDB is unavailable"""
     communityRating: CommunityRating
 }
 
+"""A movie search result from TMDB (The Movie Database)"""
 type TmdbResult {
     tmdbId: Int!
     title: String!
