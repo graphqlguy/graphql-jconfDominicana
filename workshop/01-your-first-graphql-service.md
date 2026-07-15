@@ -54,7 +54,7 @@ type Query {
 
 """
     Custom Movie type
-    All movie details are taken from the The Movie Database (TMDB)
+    All movie details are taken from The Movie Database (TMDB)
     Triple quotes allow multiline documentation.
 """
 # We will expand the Movie type as we progress through the tutorial
@@ -157,7 +157,7 @@ You get an error. That is expected: the schema declares *what* exists, but nothi
 
 The service layer already exists (`MovieService` with a database full of seeded movies), so all we add is the GraphQL entry point. Spring for GraphQL maps schema fields to annotated controller methods, so we need a controller.
 
-**Create a new Java class** named `MovieController` in the `com.graphqlguy.moviedb.movie` package, that is, next to `MovieService` in `src/main/java/com/graphqlguy/moviedb/movie/`. This is the first class we write in the workshop; every later controller follows the same shape.
+**Create a new Java class** named `MovieController` in the `com.graphqlguy.moviedb.movie` package, that is, next to `MovieService` in `src/main/java/com/graphqlguy/moviedb/movie/`. This is the first Java class we write in the workshop; every later controller follows the same shape.
 
 `src/main/java/com/graphqlguy/moviedb/movie/MovieController.java`
 
