@@ -1,5 +1,7 @@
 # Class 4: Security
 
+> **User story** · As the product owner, I want the platform open for browsing but locked for editing, so that going public never puts the data at risk.
+
 Our API is wide open. Since class 3, anyone who can reach `/graphql` can delete movies, rewrite plots, and force-delete people, no questions asked. Before this service could ever face real users, it needs two things: **authentication** (who is calling?) and **authorization** (what is this caller allowed to do?). In this class we add both, the way a production Spring application does: Spring Security for the machinery, JWT tokens for stateless API authentication, and role-based rules for the sensitive operations.
 
 By the end of this class, you will:
