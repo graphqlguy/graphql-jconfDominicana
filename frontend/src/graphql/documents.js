@@ -37,11 +37,12 @@ export function buildDocuments(caps) {
   // simply show whatever comes back.
   const reviewFields = `id score comment createdAt user { id username ${when(has('User', 'email'), 'email')} }`;
 
+  // The grid card renders exactly these: poster, title, year, genre, rating,
+  // director names, community rating, review count. Nothing else is fetched --
+  // the card does not show runtime or cast, so the query does not ask for them.
   const movieListFields = `
     ${movieCore}
-    ${when(has('Movie', 'runtime'), 'runtime')}
-    ${when(has('Movie', 'directors'), 'directors { id name }')}
-    ${when(has('Movie', 'cast'), 'cast { id characterName person { id name } }')}
+    ${when(has('Movie', 'directors'), 'directors { name }')}
     ${when(has('Movie', 'communityRating'), 'communityRating { voteAverage voteCount }')}
     ${when(has('Movie', 'reviewCount'), 'reviewCount')}
   `;
@@ -65,10 +66,6 @@ export function buildDocuments(caps) {
           content { ${movieListFields} }
           ${when(has('MoviePage', 'totalElements'), 'totalElements')}
           ${when(has('MoviePage', 'totalPages'), 'totalPages')}
-          ${when(has('MoviePage', 'currentPage'), 'currentPage')}
-          ${when(has('MoviePage', 'size'), 'size')}
-          ${when(has('MoviePage', 'hasNext'), 'hasNext')}
-          ${when(has('MoviePage', 'hasPrevious'), 'hasPrevious')}
         }
       }
     `;
@@ -85,8 +82,8 @@ export function buildDocuments(caps) {
         ${when(has('Movie', 'runtime'), 'runtime')}
         ${when(has('Movie', 'plot'), 'plot')}
         ${when(has('Movie', 'tmdbId'), 'tmdbId')}
-        ${when(has('Movie', 'directors'), `directors { ${personRef} ${when(has('Person', 'biography'), 'biography')} }`)}
-        ${when(has('Movie', 'cast'), `cast { id characterName person { ${personRef} ${when(has('Person', 'biography'), 'biography')} } }`)}
+        ${when(has('Movie', 'directors'), `directors { id name ${personCountry} }`)}
+        ${when(has('Movie', 'cast'), 'cast { id characterName person { id name } }')}
         ${when(has('Movie', 'reviews'), `reviews { ${reviewFields} }`)}
       }
     }
@@ -94,8 +91,17 @@ export function buildDocuments(caps) {
 
   // ---- search -------------------------------------------------------------
 
+  // Search person cards show name, photo, and country; the people page shows more.
+  // Two selections instead of one shared fragment, so neither over-fetches.
+  const searchPersonFields = [
+    'id',
+    'name',
+    personCountry,
+    when(has('Person', 'photoUrl'), 'photoUrl'),
+  ].filter(Boolean).join(' ');
+
   const searchPeopleBlock = when(caps.query('searchPeople'),
-    `searchPeople(name: $query) { ${personRef} }`);
+    `searchPeople(name: $query) { ${searchPersonFields} }`);
 
   let GLOBAL_SEARCH = null;
   if (caps.query('search')) {
@@ -105,7 +111,7 @@ export function buildDocuments(caps) {
       query GlobalSearch($query: String!) {
         search(query: $query) {
           ... on Movie { __typename ${movieCore} }
-          ... on Person { __typename ${personRef} }
+          ... on Person { __typename ${searchPersonFields} }
           ${when(caps.unionMember('SearchResult', 'TvShow'), '... on TvShow { __typename id title genre rating posterUrl startYear endYear }')}
         }
       }
@@ -128,8 +134,6 @@ export function buildDocuments(caps) {
         content { ${personRef} }
         ${when(has('PersonPage', 'totalElements'), 'totalElements')}
         ${when(has('PersonPage', 'totalPages'), 'totalPages')}
-        ${when(has('PersonPage', 'currentPage'), 'currentPage')}
-        ${when(has('PersonPage', 'size'), 'size')}
       }
     }
   ` : null;
@@ -141,8 +145,8 @@ export function buildDocuments(caps) {
         ${when(has('Person', 'biography'), 'biography')}
         ${when(has('Person', 'directedMovies'), `directedMovies { ${movieCore} }`)}
         ${when(has('Person', 'movieCastCredits'), `movieCastCredits { id characterName movie { ${movieCore} } }`)}
-        ${when(has('Person', 'createdShows'), 'createdShows { id title startYear endYear genre posterUrl rating }')}
-        ${when(has('Person', 'tvShowCastCredits'), 'tvShowCastCredits { id characterName tvShow { id title startYear genre posterUrl rating } }')}
+        ${when(has('Person', 'createdShows'), 'createdShows { id title startYear endYear }')}
+        ${when(has('Person', 'tvShowCastCredits'), 'tvShowCastCredits { id characterName tvShow { id title } }')}
       }
     }
   ` : null;
@@ -155,13 +159,9 @@ export function buildDocuments(caps) {
         content {
           id title genre rating posterUrl startYear endYear
           ${when(has('TvShow', 'seasons'), 'seasons')}
-          ${when(has('TvShow', 'creators'), 'creators { id name }')}
-          ${when(has('TvShow', 'cast'), 'cast { id characterName person { id name } }')}
         }
         ${when(has('TvShowPage', 'totalElements'), 'totalElements')}
         ${when(has('TvShowPage', 'totalPages'), 'totalPages')}
-        ${when(has('TvShowPage', 'currentPage'), 'currentPage')}
-        ${when(has('TvShowPage', 'size'), 'size')}
       }
     }
   ` : null;
@@ -172,8 +172,8 @@ export function buildDocuments(caps) {
         id title genre rating posterUrl startYear endYear
         ${when(has('TvShow', 'seasons'), 'seasons')}
         ${when(has('TvShow', 'plot'), 'plot')}
-        ${when(has('TvShow', 'creators'), `creators { ${personRef} ${when(has('Person', 'biography'), 'biography')} }`)}
-        ${when(has('TvShow', 'cast'), `cast { id characterName person { ${personRef} } }`)}
+        ${when(has('TvShow', 'creators'), `creators { id name ${personCountry} ${when(has('Person', 'photoUrl'), 'photoUrl')} }`)}
+        ${when(has('TvShow', 'cast'), `cast { id characterName person { id name ${when(has('Person', 'photoUrl'), 'photoUrl')} } }`)}
         ${when(has('TvShow', 'episodes'), 'episodes { id seasonNumber episodeNumber title overview runtime airYear }')}
         ${when(has('TvShow', 'reviews'), `reviews { ${reviewFields} }`)}
       }
@@ -192,20 +192,17 @@ export function buildDocuments(caps) {
 
   // ---- watch list ---------------------------------------------------------
 
-  // content is the Content interface: the shared fields (title, genre, rating,
-  // posterUrl) are read directly off the interface, and only the type-specific
-  // fields need an inline fragment. Selecting a shared field like genre inside
-  // both fragments would conflict, since Movie.genre is nullable and TvShow.genre
-  // is not; reading it once off the interface is the whole point.
+  // content is the Content interface: the shared fields (title, posterUrl) are
+  // read directly off the interface, and only the type-specific id needs an
+  // inline fragment. Reading shared fields once off the interface instead of
+  // duplicating them per fragment is the whole point of the interface.
   const watchlistContent = `
     content {
       __typename
       title
-      genre
-      rating
       posterUrl
-      ... on Movie { id releaseYear }
-      ... on TvShow { id startYear endYear ${when(has('TvShow', 'seasons'), 'seasons')} }
+      ... on Movie { id }
+      ... on TvShow { id }
     }
   `;
 
@@ -217,7 +214,7 @@ export function buildDocuments(caps) {
 
   const ADD_TO_WATCHLIST = caps.mutation('addToWatchlist') ? gql`
     mutation AddToWatchlist($subject: WatchlistSubjectInput!, $status: WatchStatus) {
-      addToWatchlist(subject: $subject, status: $status) { id status ${watchlistContent} }
+      addToWatchlist(subject: $subject, status: $status) { id status }
     }
   ` : null;
 
@@ -233,7 +230,7 @@ export function buildDocuments(caps) {
 
   // ---- mutations ----------------------------------------------------------
 
-  const authResponse = 'token user { id username email role }';
+  const authResponse = 'token user { id username role }';
   const LOGIN = caps.mutation('login') ? gql`
     mutation Login($input: LoginInput!) { login(input: $input) { ${authResponse} } }
   ` : null;
@@ -242,14 +239,7 @@ export function buildDocuments(caps) {
   ` : null;
 
   const CREATE_MOVIE = caps.mutation('createMovie') ? gql`
-    mutation CreateMovie($input: CreateMovieInput!) {
-      createMovie(input: $input) {
-        ${movieCore}
-        ${when(has('Movie', 'runtime'), 'runtime')}
-        ${when(has('Movie', 'plot'), 'plot')}
-        ${when(has('Movie', 'tmdbId'), 'tmdbId')}
-      }
-    }
+    mutation CreateMovie($input: CreateMovieInput!) { createMovie(input: $input) { id } }
   ` : null;
 
   const UPDATE_MOVIE = caps.mutation('updateMovie') ? gql`
@@ -264,13 +254,7 @@ export function buildDocuments(caps) {
   ` : null;
 
   const DELETE_MOVIE = caps.mutation('deleteMovie') ? gql`
-    mutation DeleteMovie($id: ID!) { deleteMovie(id: $id) { success message } }
-  ` : null;
-
-  const CREATE_PERSON = caps.mutation('createPerson') ? gql`
-    mutation CreatePerson($input: CreatePersonInput!) {
-      createPerson(input: $input) { id name birthYear ${when(has('Person', 'countryCode'), 'countryCode')} }
-    }
+    mutation DeleteMovie($id: ID!) { deleteMovie(id: $id) { success } }
   ` : null;
 
   const UPDATE_PERSON = caps.mutation('updatePerson') ? gql`
@@ -281,18 +265,16 @@ export function buildDocuments(caps) {
 
   const DELETE_PERSON = caps.mutation('deletePerson') ? gql`
     mutation DeletePerson($id: ID!, $force: Boolean!) {
-      deletePerson(id: $id, force: $force) { success error deletedId }
+      deletePerson(id: $id, force: $force) { success error }
     }
   ` : null;
 
   const CREATE_REVIEW = caps.mutation('createReview') ? gql`
-    mutation CreateReview($input: CreateReviewInput!) {
-      createReview(input: $input) { ${reviewFields} }
-    }
+    mutation CreateReview($input: CreateReviewInput!) { createReview(input: $input) { id } }
   ` : null;
 
   const DELETE_REVIEW = caps.mutation('deleteReview') ? gql`
-    mutation DeleteReview($id: ID!) { deleteReview(id: $id) { success deletedId } }
+    mutation DeleteReview($id: ID!) { deleteReview(id: $id) { success } }
   ` : null;
 
   // ---- subscriptions ------------------------------------------------------
@@ -301,8 +283,6 @@ export function buildDocuments(caps) {
     subscription ReviewAdded($movieId: ID) {
       reviewAdded(movieId: $movieId) {
         review { ${reviewFields} }
-        movieId
-        tvShowId
         title
       }
     }
@@ -316,7 +296,7 @@ export function buildDocuments(caps) {
     GET_WATCHLIST, ADD_TO_WATCHLIST, SET_WATCH_STATUS, REMOVE_FROM_WATCHLIST,
     LOGIN, REGISTER,
     CREATE_MOVIE, UPDATE_MOVIE, DELETE_MOVIE,
-    CREATE_PERSON, UPDATE_PERSON, DELETE_PERSON, CREATE_REVIEW, DELETE_REVIEW,
+    UPDATE_PERSON, DELETE_PERSON, CREATE_REVIEW, DELETE_REVIEW,
     REVIEW_ADDED,
   };
 }
