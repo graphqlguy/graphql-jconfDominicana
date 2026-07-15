@@ -122,6 +122,17 @@ Two things a union requires, on the Java side:
 
 The resolver returns a `List<SearchResult>` holding a mix of `Movie` and `Person` objects. How does GraphQL know which is which? By the Java class name: Spring for GraphQL maps a `Movie` instance to the `Movie` type and a `Person` instance to the `Person` type, because the class names match the schema type names. No manual type resolver is needed.
 
+The union supersedes the typed searches: anything they answer, `search` answers too. They still work, and clients may already depend on them, so we do not remove them — we retire them exactly the way class 1 retired `moviesAll`. Change the two existing lines to add the directive:
+
+`src/main/resources/graphql/schema.graphqls`
+
+```graphql
+    searchMovies(title: String!): [Movie!]! @deprecated(reason: "Use 'search' instead.")
+    searchPeople(name: String!): [Person!]! @deprecated(reason: "Use 'search' instead.")
+```
+
+Open GraphiQL's docs and both are struck through, each pointing at its replacement. The API grew a better answer and said so, without breaking anyone.
+
 ## 3. Querying a union: inline fragments
 
 A union has no fields of its own; a `SearchResult` is *either* a `Movie` *or* a `Person`, and those share nothing to select in common. The client therefore says, for each possible type, which fields to read. This is an **inline fragment**, `... on Type`:
@@ -149,4 +160,5 @@ The picture changes when the members are nearly identical. A movie and a televis
 - A union type lets one field return a value that is one of several member types.
 - Member types share a Java marker interface so a resolver can return them as one list; Spring resolves the concrete type by matching the class name to the schema type.
 - Clients read a union with inline fragments (`... on Type`) and the built-in `__typename`.
+- Supersede, don't remove: the typed searches remain, deprecated, exactly like `moviesAll` in class 1.
 - Use a union when the members are genuinely different; use an interface when they share a common set of fields.
