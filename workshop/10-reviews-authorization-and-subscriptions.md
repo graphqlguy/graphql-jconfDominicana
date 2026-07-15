@@ -307,7 +307,18 @@ type ReviewNotification {
 }
 ```
 
-One piece of configuration remains: the WebSocket endpoint does not exist until you ask for it. Add it under the existing `spring.graphql` key in `application.yaml`:
+One piece of infrastructure remains: the WebSocket endpoint does not exist until you ask for it, and asking takes two steps. First the dependency that puts WebSocket support on the classpath:
+
+`pom.xml`
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-websocket</artifactId>
+</dependency>
+```
+
+Then the endpoint itself, under the existing `spring.graphql` key in `application.yaml`:
 
 ```yaml
 spring:
@@ -316,7 +327,7 @@ spring:
       path: /graphql
 ```
 
-A subtlety worth knowing: GraphQL subscriptions have more than one transport. GraphiQL reaches them over plain HTTP (server-sent events), which works even without this entry — but the frontend connects with the `graphql-ws` protocol over WebSocket, and without the endpoint its live updates silently fail. Restart, and try it with two GraphiQL tabs: in one, run the subscription and leave it open:
+Both are required: without the dependency, the `path` entry is silently ignored and the server rejects every WebSocket handshake. A subtlety worth knowing: GraphQL subscriptions have more than one transport. GraphiQL reaches them over plain HTTP (server-sent events), which works even without any of this — but the frontend connects with the `graphql-ws` protocol over WebSocket, and without the endpoint its live updates silently fail. Restart, and try it with two GraphiQL tabs: in one, run the subscription and leave it open:
 
 ```graphql
 subscription {
