@@ -175,7 +175,7 @@ The guiding principle: validate as far out as the rule allows. Push structural c
 
 ## Exercise
 
-`UpdateMovieInput` and `RegisterInput` are still unvalidated. Constrain both with the same directives: give `UpdateMovieInput` the field limits of `CreateMovieInput` (its fields are optional, so a value must be valid only when present), and constrain `RegisterInput` so the username, email, and password cannot be empty or excessively long. While you are there, give `RegisterInput` a docstring that says the rules are enforced: the directives state the constraints, and the description states the intent, both visible to every client.
+`UpdateMovieInput` and `RegisterInput` are still unvalidated. Constrain both with the same directives: give `UpdateMovieInput` the field limits of `CreateMovieInput` (its fields are optional, so a value must be valid only when present), and constrain `RegisterInput` so the username, email, and password cannot be empty or excessively long. Give `RegisterInput` a docstring saying the rules are enforced: the directives state the constraints, the description states the intent, and both are visible to every client.
 
 <details>
 <summary>Show solution</summary>
