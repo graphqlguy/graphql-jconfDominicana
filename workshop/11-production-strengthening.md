@@ -107,6 +107,7 @@ public class QueryDepthInstrumentation extends SimplePerformantInstrumentation {
 
 Two details worth noting: the walk resolves **fragment spreads** (so a query cannot hide depth inside a fragment), and it guards against a fragment cycle with a `visited` set, because this hook runs before validation has ruled cycles out. Throwing `AbortExecutionException` stops execution and returns the message as a GraphQL error.
 
+> [!NOTE]
 > **Why depth 15?** The default in `application.yaml` is 15, not 10. The standard introspection query GraphiQL runs to build its docs and autocomplete is itself about 13 levels deep, so a lower limit would break tooling. Set the ceiling above your own legitimate queries and introspection, not at some tidy round number.
 
 ## 3. Logging slow resolvers
@@ -254,13 +255,13 @@ input UpdateMovieInput {
 }
 ```
 
-The `@Pattern` directive must be declared once, alongside `@Range` and `@Size`. No Java changes: the wiring from Class 6 enforces all of it.
+The `@Pattern` directive must be declared once, alongside `@Range` and `@Size`. No Java changes: the wiring from class 6 enforces all of it.
 
 </details>
 
 ### 2. Handle duplicate reviews gracefully
 
-Try reviewing the same movie twice: the service throws `DuplicateReviewException`, but with no handler it falls through to the catch-all and surfaces as an opaque `INTERNAL_ERROR`. Add a handler so it returns a clean `BAD_REQUEST`, the way the other domain exceptions do (Class 5).
+Try reviewing the same movie twice: the service throws `DuplicateReviewException`, but with no handler it falls through to the catch-all and surfaces as an opaque `INTERNAL_ERROR`. Add a handler so it returns a clean `BAD_REQUEST`, the way the other domain exceptions do (class 5).
 
 <details>
 <summary>Solution</summary>
