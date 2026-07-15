@@ -1,5 +1,7 @@
 # Class 12: Testing
 
+> **User story** · As the product owner, I want every feature guarded by tests that use the API the way clients do, so that tomorrow's changes cannot break today's promises.
+
 The API is built and hardened. This final class is about proving it works, and keeping it working. GraphQL rewards a particular testing style. In a REST service the controllers are thin and a unit test of the service covers most of the risk. In GraphQL the interesting behaviour lives in the machinery *around* your resolvers: the query is parsed, validated against the schema, fields are resolved and batched, security is applied, and errors are shaped into the response. A unit test of one resolver sees none of that. So we lean on **integration tests** that drive the real GraphQL endpoint, and reach for the faster slice test where it pays off.
 
 By the end of this class, you will:
