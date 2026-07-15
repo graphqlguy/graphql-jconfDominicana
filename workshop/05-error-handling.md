@@ -1,5 +1,7 @@
 # Class 5: Error Handling
 
+> **User story** · As the product owner, I want the API to fail with clear, specific answers, so that the teams building on it fix problems instead of guessing at them.
+
 GraphQL handles failure differently from REST. There is no 404 or 500 status code per operation; a GraphQL response is almost always `HTTP 200`, and problems are reported inside the response body. Crucially, a single response can contain **both** a `data` field and an `errors` array: some fields resolve while others fail, and the client receives everything that succeeded alongside a precise description of what did not.
 
 This gives us two distinct tools, and this class covers both:
