@@ -1,5 +1,7 @@
 # Class 6: Input Validation
 
+> **User story** · As the product owner, I want every input checked against published rules, so that bad data never enters the catalogue, whichever client sends it.
+
 The mutations we have written so far trust their input completely. `createMovie` accepts an empty title and a release year of 3000 and stores both without objection. A production API cannot make that assumption: input arriving over the network must be checked before it is acted upon. This class adds that checking, with an emphasis on doing it declaratively, in the schema, where the rules become part of the published contract.
 
 Validation in a Spring for GraphQL application happens in three distinct places, and it is worth being clear about which belongs where:

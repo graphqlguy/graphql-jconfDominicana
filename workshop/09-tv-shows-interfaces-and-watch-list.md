@@ -1,5 +1,7 @@
 # Class 9: TV Shows, Interfaces, and a Watch List
 
+> **User story** · As the product owner, I want TV shows in the catalogue and personal watch lists on top, so that signed-in visitors have a reason to come back.
+
 We have put television shows off until now on purpose. On their own they teach little: a `TvShow` is resolved exactly like a `Movie`, and you have written that code several times. What TV shows give us is a second type that is genuinely *like* a movie, and that unlocks two parts of the type system we have not met yet:
 
 - an **interface**, for the fields a movie and a show have in common, and
