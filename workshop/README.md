@@ -1,6 +1,6 @@
 # Workshop Guide
 
-Welcome! This folder contains the step-by-step instructions we follow during the workshop. Each class is a separate markdown file, and each one ends with exercises (solutions included, but try first).
+Welcome! This folder contains the step-by-step instructions we follow during the workshop. Each class is a separate markdown file; most end with exercises, with solutions or hints folded below each one (try first).
 
 Before you start, make sure the project runs on your machine: see the [project README](../README.md) for prerequisites, seed users, and the optional TMDB API key.
 
