@@ -102,6 +102,6 @@ class MovieMutationTest {
                 .variable("input", Map.of("title", "Sneaky", "releaseYear", 2020, "genre", "DRAMA"))
                 .execute()
                 .errors().satisfy(errors -> assertThat(errors)
-                        .anySatisfy(error -> assertThat(error.getMessage()).contains("not authorized")));
+                        .anySatisfy(error -> assertThat(error.getErrorType()).hasToString("FORBIDDEN")));
     }
 }
