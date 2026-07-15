@@ -13,10 +13,10 @@ type Query {
     movie(id: ID!): Movie
     movies(filter: MovieFilter, page: Int = 0, size: Int = 10, sort: MovieSort): MoviePage!
     moviesByIds(ids: [ID!]!): [Movie]
-    searchMovies(title: String!): [Movie!]!
+    searchMovies(title: String!): [Movie!]! @deprecated(reason: "Use 'search' instead.")
     people(page: Int = 0, size: Int = 20): PersonPage!
     person(id: ID!): Person
-    searchPeople(name: String!): [Person!]!
+    searchPeople(name: String!): [Person!]! @deprecated(reason: "Use 'search' instead.")
     search(query: String!): [SearchResult!]!
     """Look up a country by its ISO 3166-1 alpha-2 code, e.g. CZ"""
     country(code: ID!): Country
