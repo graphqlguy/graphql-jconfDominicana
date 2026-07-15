@@ -67,10 +67,41 @@ public class QueryDepthInstrumentation extends SimplePerformantInstrumentation {
     }
 
     // Walks the selection sets, following inline fragments and fragment spreads,
-    // returning the deepest field nesting. (See the full file for the recursion.)
-    private int calculateDepth(Document document, Map<String, FragmentDefinition> fragments) { /* ... */ }
-    private int depthOf(SelectionSet selectionSet, Map<String, FragmentDefinition> fragments,
-                        Set<String> visitedFragments) { /* ... */ }
+    // returning the deepest field nesting.
+    private int calculateDepth(Document document, Map<String, FragmentDefinition> fragments) {
+        return document.getDefinitions().stream()
+                .filter(OperationDefinition.class::isInstance)
+                .map(OperationDefinition.class::cast)
+                .mapToInt(op -> depthOf(op.getSelectionSet(), fragments, new HashSet<>()))
+                .max()
+                .orElse(0);
+    }
+
+    private int depthOf(SelectionSet selectionSet,
+                        Map<String, FragmentDefinition> fragments,
+                        Set<String> visitedFragments) {
+        if (selectionSet == null) {
+            return 0;
+        }
+        int max = 0;
+        for (Selection<?> selection : selectionSet.getSelections()) {
+            int depth = 0;
+            if (selection instanceof Field field) {
+                depth = 1 + depthOf(field.getSelectionSet(), fragments, visitedFragments);
+            } else if (selection instanceof InlineFragment inlineFragment) {
+                depth = depthOf(inlineFragment.getSelectionSet(), fragments, visitedFragments);
+            } else if (selection instanceof FragmentSpread spread) {
+                FragmentDefinition fragment = fragments.get(spread.getName());
+                // this hook runs before validation, so a fragment cycle could still be present
+                if (fragment != null && visitedFragments.add(spread.getName())) {
+                    depth = depthOf(fragment.getSelectionSet(), fragments, visitedFragments);
+                    visitedFragments.remove(spread.getName());
+                }
+            }
+            max = Math.max(max, depth);
+        }
+        return max;
+    }
 }
 ```
 
@@ -139,7 +170,7 @@ Every response now carries an `X-Request-Id` header, and any resolver can read t
 
 ## 5. Production configuration
 
-The last pieces live in `application.yaml`.
+The last pieces live in `application.yaml`. Mind the nesting: the CORS block goes under the existing `spring.graphql` key, `threads.virtual` already exists and its `false` becomes `true`, and the final `graphql:` block is a new **top-level** key, not part of `spring:`.
 
 ```yaml
 spring:
@@ -156,7 +187,7 @@ graphql:
   slow-resolver-threshold-ms: 100
 ```
 
-- **CORS**: the browser will not let the React app on `:5173` call the API on `:8080` without the server explicitly allowing that origin. Spring for GraphQL has dedicated CORS properties for the GraphQL endpoint.
+- **CORS**: in development you will not notice this setting at all, because the Vite dev server proxies `/graphql` to the backend and the browser sees a single origin. In production the app and the API typically live on different origins, and then the browser refuses cross-origin calls unless the server allows them — which is what this switch does. Spring for GraphQL has dedicated CORS properties for the GraphQL endpoint; point `allowed-origins` at wherever the frontend is actually served from.
 - **Virtual threads**: on Java 21, enabling virtual threads lets blocking work (JPA queries, the external TMDB and countries calls) scale without a large thread pool.
 - The two `graphql.*` keys bind to `InstrumentationProperties`.
 
@@ -229,7 +260,7 @@ The `@Pattern` directive must be declared once, alongside `@Range` and `@Size`. 
 
 ### 2. Handle duplicate reviews gracefully
 
-Try reviewing the same movie twice: the service throws `DuplicateReviewException`, but with no handler it falls through to the catch-all and surfaces as an opaque 500. Add a handler so it returns a clean `BAD_REQUEST`, the way the other domain exceptions do (Class 5).
+Try reviewing the same movie twice: the service throws `DuplicateReviewException`, but with no handler it falls through to the catch-all and surfaces as an opaque `INTERNAL_ERROR`. Add a handler so it returns a clean `BAD_REQUEST`, the way the other domain exceptions do (Class 5).
 
 <details>
 <summary>Solution</summary>
