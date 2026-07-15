@@ -1,5 +1,7 @@
 # Class 1: Your First GraphQL Service
 
+> **User story** · As a product owner, I want visitors to be able to browse our film catalogue, filtered, sorted, and paginated.
+
 GraphQL lets clients ask for exactly what they need, and nothing more. In this class we turn our plain Spring Boot application into a GraphQL service: we add the dependency, write our first schema, wire it to the service layer that is already there, and finish with a query that supports filtering, sorting, and pagination.
 
 By the end of this class, you will:
@@ -39,9 +41,9 @@ The file already contains a `spring:` section, so nest the `graphql:` block unde
 
 ## 3. Write your first schema
 
-This is the heart of schema-first development: we describe the API in the GraphQL Schema Definition Language (SDL), and only then implement it. Spring picks up any `.graphqls` file under `src/main/resources/graphql/`.
+This is the heart of schema-first development: we describe the API in the GraphQL Schema Definition Language (SDL), and only then implement it. Spring picks up any `.graphqls` file under `src/main/resources/graphql/` — and that folder does not exist yet.
 
-Create the file with one query and one type:
+**Create a folder named `graphql`** under `src/main/resources`, and inside it **a file named `schema.graphqls`**. The location matters: a schema file placed anywhere else is not picked up. Fill the file with one query and one type:
 
 `src/main/resources/graphql/schema.graphqls`
 
