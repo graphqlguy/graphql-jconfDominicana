@@ -1,5 +1,7 @@
 # Class 10: Reviews, Authorization, and Subscriptions
 
+> **User story** · As the product owner, I want visitors to be able to rate and review titles and see new reviews arrive live, so that the platform becomes a community, not a directory.
+
 The catalog so far is read-mostly. Reviews make it social: a signed-in user rates and comments on a movie or show, and everyone sees the results, live. Building this is where several threads we have pulled separately come together, and it adds the last large pieces of the API:
 
 - a second custom scalar at its use-site, `DateTime`,

@@ -1,5 +1,7 @@
 # Class 8: Custom Scalars and External APIs
 
+> **User story** · As the product owner, I want the catalogue enriched beyond our own data, with countries, flags, and community ratings, so that our pages offer more than we store.
+
 So far every value our API returns has been one of a handful of standard scalars, and every one of them has come from our own database. This class reaches past both of those boundaries. First we teach the schema new scalar types, so a field can be more specific than "just a string". Then we make our GraphQL server a *client* of another GraphQL server, resolving a field by calling out to a public API at query time.
 
 By the end of this class, you will:
