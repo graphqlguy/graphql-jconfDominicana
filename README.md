@@ -94,6 +94,7 @@ Log in via the `login` mutation (or the frontend), then send `Authorization: Bea
 | Spring Boot / Spring for GraphQL | 4.0.5 |
 | Spring Security | 7.0.4 |
 | Java | 21 |
+| Node.js | 20+ (tested with 24) |
 | Database | H2 (in-memory) |
 | Frontend | React + Vite |
 
