@@ -18,7 +18,7 @@ As always, the domain layer is already in the starter: the `TvShow`, `Episode`, 
 
 ## 1. TV shows (the quick part)
 
-There is nothing new here. It is the movie pattern applied to a second type: a couple of queries and a controller whose field resolvers are batched to avoid N+1, exactly as in Class 2.
+There is nothing new here. It is the movie pattern applied to a second type: a couple of queries and a controller whose field resolvers are batched to avoid N+1, exactly as in class 2.
 
 `src/main/resources/graphql/schema.graphqls`
 
@@ -147,7 +147,7 @@ Restart, and the frontend's TV Shows section lights up. That is the whole point 
 
 ## 2. An interface: the fields movies and shows share
 
-In Class 7 we combined `Movie` and `Person` in a **union**, and it was the right tool precisely because the two types share nothing to select in common. A movie and a television show are the opposite case. Both have a title, a genre, a rating, a poster. A union here would force every client to write two nearly identical inline fragments to read the same fields twice.
+In class 7 we combined `Movie` and `Person` in a **union**, and it was the right tool precisely because the two types share nothing to select in common. A movie and a television show are the opposite case. Both have a title, a genre, a rating, a poster. A union here would force every client to write two nearly identical inline fragments to read the same fields twice.
 
 That is the signal for an **interface**: a set of fields that multiple types promise to provide, and that a client can select directly, without a fragment.
 
@@ -173,6 +173,7 @@ type TvShow implements Content {
 
 A type that implements an interface must declare every field the interface lists, which `Movie` and `TvShow` already do. On the Java side, resolution works just as it did for the union: the starter provides a `Content` interface in the `shared` package that declares the four shared accessors (so the contract is compiler-checked, not just a marker), `Movie` and `TvShow` already implement it, and Spring for GraphQL maps a `Movie` instance to the `Movie` type and a `TvShow` instance to the `TvShow` type by matching the class name. No manual type resolver is needed.
 
+> [!NOTE]
 > **A note on nullability.** `Content.genre` is nullable (`Genre`), and both `Movie` and `TvShow` declare `genre: Genre` to match. An implementing type is allowed to be *stricter* than its interface, so a type could legally declare `genre: Genre!` while the interface stays nullable. That is common in real schemas, where types evolve separately and drift apart. It matters for one reason we will see in a moment: if two types declare a shared field with different nullability, a client cannot select that field inside each fragment, because the two response shapes conflict. Reading shared fields off the interface avoids the problem entirely, which is another reason to prefer it.
 
 An interface is only useful once something returns it. That something is the watch list.
@@ -292,9 +293,9 @@ public class WatchlistController {
 }
 ```
 
-The `content` resolver is where the interface pays off. It returns `Content`, and because `Movie` and `TvShow` both implement it, either fits, and Spring resolves the concrete GraphQL type from the class. The `Principal` parameter is the signed-in user, injected by Spring Security from the JWT you built in Class 4; the service uses it to scope the list to that user and to enforce that you can only change your own entries. The `WatchlistService` that does this, along with the entity and repository, is scaffolding, so this controller is all the GraphQL you add.
+The `content` resolver is where the interface pays off. It returns `Content`, and because `Movie` and `TvShow` both implement it, either fits, and Spring resolves the concrete GraphQL type from the class. The `Principal` parameter is the signed-in user, injected by Spring Security from the JWT you built in class 4; the service uses it to scope the list to that user and to enforce that you can only change your own entries. The `WatchlistService` that does this, along with the entity and repository, is scaffolding, so this controller is all the GraphQL you add.
 
-Note the `@PreAuthorize("isAuthenticated()")` on every operation. This is the method security from Class 4 with a new expression: not "is this caller an administrator" but simply "is this caller signed in at all" — the right rule for a personal feature that any user may use but no anonymous visitor can. It is not optional decoration: without it, an anonymous call sails past security and reaches the service as Spring Security's pseudo-user `anonymousUser`, whose user lookup fails and surfaces as an opaque `INTERNAL_ERROR`. With it, the caller is rejected cleanly, before the resolver ever runs. Try it: run the `watchlist` query below with an empty Headers tab and observe the clean `UNAUTHORIZED` error, then sign in.
+Note the `@PreAuthorize("isAuthenticated()")` on every operation. This is the method security from class 4 with a new expression: not "is this caller an administrator" but simply "is this caller signed in at all" — the right rule for a personal feature that any user may use but no anonymous visitor can. It is not optional decoration: without it, an anonymous call sails past security and reaches the service as Spring Security's pseudo-user `anonymousUser`, whose user lookup fails and surfaces as an opaque `INTERNAL_ERROR`. With it, the caller is rejected cleanly, before the resolver ever runs. Try it: run the `watchlist` query below with an empty Headers tab and observe the clean `UNAUTHORIZED` error, then sign in.
 
 ### Querying it: shared fields off the interface
 
@@ -358,7 +359,7 @@ In the frontend, all of this is already wired: a **Watch List** appears in the n
 
 ## Exercise: a person's television work
 
-A `Person` already exposes the movies they directed and their movie cast credits. Now that shows exist, give a person their television work too: add `createdShows` and `tvShowCastCredits` to the `Person` type, so a person's page lists the shows they created and the roles they played. The `PersonService` already has the batched lookups; this is the reverse-field pattern from Class 2 applied to two more relationships.
+A `Person` already exposes the movies they directed and their movie cast credits. Now that shows exist, give a person their television work too: add `createdShows` and `tvShowCastCredits` to the `Person` type, so a person's page lists the shows they created and the roles they played. The `PersonService` already has the batched lookups; this is the reverse-field pattern from class 2 applied to two more relationships.
 
 <details>
 <summary>Solution</summary>
