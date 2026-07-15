@@ -1,5 +1,7 @@
 # Class 7: Search and Unions
 
+> **User story** · As the product owner, I want one search box that finds films and people alike, so that a visitor can type a name and get whatever matches.
+
 Users need to find things by name, and a real search box does not care whether the match is a movie or a person: it returns whatever is relevant, of whatever type. This class builds that, and in doing so introduces GraphQL **union types**, which let a single field return a value that is one of several distinct types.
 
 We approach it in two steps: first two ordinary, single-type searches, then the union that combines them.
