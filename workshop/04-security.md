@@ -46,9 +46,16 @@ The starter already contains a small configuration class, `SecurityConfig`, whos
 `src/main/java/com/graphqlguy/moviedb/config/SecurityConfig.java`
 
 ```java
+package com.graphqlguy.moviedb.config;
+
 import com.graphqlguy.moviedb.security.JwtAuthFilter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
