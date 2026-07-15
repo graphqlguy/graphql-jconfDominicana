@@ -408,6 +408,8 @@ applyIfProvided(input.countryCode(), person::setCountryCode);
 
 The guard fires only when `name` was actually provided: an omitted name is fine (leave it unchanged), a provided null or blank one is a client error. That distinction is impossible with a plain nullable field, and it is the whole point of `ArgumentValue`.
 
+Note that we are duplicating the two small helpers that already live in `MovieService`. For now, keep it simple and copy them into `PersonService`; if you prefer, extract them into a shared helper class instead.
+
 </details>
 
 ## Recap
