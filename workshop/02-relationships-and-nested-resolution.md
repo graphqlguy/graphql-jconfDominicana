@@ -1,5 +1,7 @@
 # Class 2: Relationships and Nested Resolution
 
+> **User story** · As the product owner, I want every film connected to its directors and cast, and people connected back to their work, so that visitors can follow the names they love through the catalogue.
+
 A movie database is not a set of flat tables, it is a graph: movies connect to the people who made them, and people connect back to their work. In this class we expose those relationships in the schema and learn how GraphQL actually resolves nested fields, first automatically, then with our own resolver code.
 
 By the end of this class, you will:
