@@ -53,7 +53,8 @@ return wiringBuilder -> wiringBuilder
         .directiveWiring(new ValidationSchemaWiring(validationRules));
 ```
 
-> **TIP:** If you did not build the validation class, you will not have this configurer yet. Create `GraphQLConfig` with a `@Bean RuntimeWiringConfigurer` that returns `wiringBuilder -> wiringBuilder.scalar(ExtendedScalars.CountryCode)` and nothing else.
+> [!TIP]
+> If you did not build the validation class, you will not have this configurer yet. Create `GraphQLConfig` with a `@Bean RuntimeWiringConfigurer` that returns `wiringBuilder -> wiringBuilder.scalar(ExtendedScalars.CountryCode)` and nothing else.
 
 ### Declare and use the scalar
 
@@ -136,7 +137,7 @@ type Country {
 }
 ```
 
-Note the second addition: `Person` gains a `country` field of the new type. The standalone query lets a client look up any country; the field is what enriches a person, and it is the one we will resolve with our own code below.
+This adds two things. The standalone `country` query lets a client look up any country directly; the `country` field on `Person` is what enriches a person, and it is the one we resolve with our own code below.
 
 `src/main/java/com/graphqlguy/moviedb/country/Country.java` (new)
 
@@ -236,7 +237,8 @@ public Cache<String, Country> countryCache() {
 }
 ```
 
-> **TIP:** `CacheConfig` already exists in the starter (it holds a cache the TMDB scaffolding uses). Add the `countryCache` bean beside the existing one.
+> [!TIP]
+> `CacheConfig` already exists in the starter (it holds a cache the TMDB scaffolding uses). Add the `countryCache` bean beside the existing one.
 
 ### The two resolvers
 
@@ -265,7 +267,7 @@ public class CountryController {
 }
 ```
 
-And the field resolver that turns a `Person`'s code into a full `Country`. This is a `@SchemaMapping` on `Person`, the same nested-resolution pattern from Class 2, except the data comes from an external API instead of a repository. Note the guard and the `try/catch`: a person may have no code, and the remote service may be down. Neither should break the whole query, so we return `null` and log rather than propagate.
+And the field resolver that turns a `Person`'s code into a full `Country`. This is a `@SchemaMapping` on `Person`, the same nested-resolution pattern from class 2, except the data comes from an external API instead of a repository. Note the guard and the `try/catch`: a person may have no code, and the remote service may be down. Neither should break the whole query, so we return `null` and log rather than propagate.
 
 `src/main/java/com/graphqlguy/moviedb/person/PersonController.java`
 
@@ -307,7 +309,8 @@ query {
 
 The `country` block is filled in by a live call to another GraphQL server: `{ "name": "United Kingdom", "emoji": "🇬🇧", "capital": "London", "currency": "GBP" }`. In the frontend, person cards now show a flag next to the name, resolved this same way.
 
-> **A note on N+1.** Because `country` resolves per person, a list of people triggers one external call per distinct code. The cache makes repeats free, but the first render of a diverse list still fans out. For an external dependency this is often acceptable, and the cache is the pragmatic mitigation. If it were not, `@BatchMapping` (Class 2) is the tool, and the exercise below uses exactly that against TMDB.
+> [!NOTE]
+> **A note on N+1.** Because `country` resolves per person, a list of people triggers one external call per distinct code. The cache makes repeats free, but the first render of a diverse list still fans out. For an external dependency this is often acceptable, and the cache is the pragmatic mitigation. If it were not, `@BatchMapping` (class 2) is the tool, and the exercise below uses exactly that against TMDB.
 
 ## Recap
 

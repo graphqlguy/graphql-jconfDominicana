@@ -3,7 +3,7 @@
 The catalog so far is read-mostly. Reviews make it social: a signed-in user rates and comments on a movie or show, and everyone sees the results, live. Building this is where several threads we have pulled separately come together, and it adds the last large pieces of the API:
 
 - a second custom scalar at its use-site, `DateTime`,
-- two kinds of authorization that go beyond the role checks of Class 4, and
+- two kinds of authorization that go beyond the role checks of class 4, and
 - real-time updates pushed to clients over WebSocket.
 
 By the end of this class, you will:
@@ -12,18 +12,18 @@ By the end of this class, you will:
 - Enforce **object-level** (ownership) and **field-level** authorization
 - Push live updates to subscribers with a GraphQL **subscription**
 
-As always, the domain layer is scaffolding: the `Review` entity and repository, `CreateReviewInput`, `ReviewSubjectInput` (the `@oneOf` input from Class 9), `DeleteReviewResponse`, the `MovieReviewCount` projection, and a basic `ReviewService` are already in the starter. This class adds the GraphQL layer, the authorization, and the subscription.
+As always, the domain layer is scaffolding: the `Review` entity and repository, `CreateReviewInput`, `ReviewSubjectInput` (the `@oneOf` input from class 9), `DeleteReviewResponse`, the `MovieReviewCount` projection, and a basic `ReviewService` are already in the starter. This class adds the GraphQL layer, the authorization, and the subscription.
 
 ## 1. Reviews and the `DateTime` scalar
 
-A review carries a timestamp. Rather than model it as a `String`, we use the `DateTime` scalar from the extended-scalars library, exactly as we did with `CountryCode` in Class 8. The library is already a dependency; we only register the scalar.
+A review carries a timestamp. Rather than model it as a `String`, we use the `DateTime` scalar from the extended-scalars library, exactly as we did with `CountryCode` in class 8. The library is already a dependency; we only register the scalar.
 
 `src/main/java/com/graphqlguy/moviedb/config/GraphQLConfig.java`
 
 ```java
 import graphql.scalars.ExtendedScalars;
 
-// add DateTime alongside the CountryCode scalar from Class 8:
+// add DateTime alongside the CountryCode scalar from class 8:
 return wiringBuilder -> wiringBuilder
         .scalar(ExtendedScalars.DateTime)
         .scalar(ExtendedScalars.CountryCode)
@@ -71,7 +71,7 @@ type Mutation {
 }
 ```
 
-The `CreateReviewInput` and its `@oneOf` `ReviewSubjectInput` are scaffolding, and identical in shape to the watch-list input you built in Class 9:
+The `CreateReviewInput` and its `@oneOf` `ReviewSubjectInput` are scaffolding, and identical in shape to the watch-list input you built in class 9:
 
 ```graphql
 input CreateReviewInput {
@@ -88,7 +88,7 @@ input ReviewSubjectInput @oneOf {
 
 Note there is no re-teaching of `@oneOf` here. You learned it with the watch list; a review targets a movie or a show in exactly the same way, so you simply use it.
 
-The controller exposes the mutation and resolves the per-title review lists with batch mappings, the same N+1-avoiding pattern from Class 2. `reviewCount` is resolved from a grouped `COUNT` query rather than by loading and counting reviews, which is what makes it cheap enough to show on every card of the landing page.
+The controller exposes the mutation and resolves the per-title review lists with batch mappings, the same N+1-avoiding pattern from class 2. `reviewCount` is resolved from a grouped `COUNT` query rather than by loading and counting reviews, which is what makes it cheap enough to show on every card of the landing page.
 
 `src/main/java/com/graphqlguy/moviedb/review/ReviewController.java` (new)
 
