@@ -46,6 +46,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.graphql.data.method.annotation.GraphQlExceptionHandler;
 import org.springframework.graphql.execution.ErrorType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import java.util.Map;
@@ -74,14 +75,6 @@ public class GlobalExceptionHandler {
     }
 
     @GraphQlExceptionHandler
-    public GraphQLError handleAccessDenied(AccessDeniedException ex, DataFetchingEnvironment env) {
-        return GraphqlErrorBuilder.newError(env)
-                .message("You are not authorized to perform this action")
-                .errorType(ErrorType.FORBIDDEN)
-                .build();
-    }
-
-    @GraphQlExceptionHandler
     public GraphQLError handleConstraintViolation(ConstraintViolationException ex, DataFetchingEnvironment env) {
         ConstraintViolation<?> first = ex.getConstraintViolations().iterator().next();
         String field = first.getPropertyPath().toString();
@@ -105,6 +98,9 @@ public class GlobalExceptionHandler {
 
     @GraphQlExceptionHandler
     public GraphQLError handleUnhandled(final Exception ex, DataFetchingEnvironment env) {
+        if (ex instanceof AccessDeniedException || ex instanceof AuthenticationException) {
+            return null; // unresolved: yields to Spring Security's own resolver
+        }
         String reference = UUID.randomUUID().toString();
         log.error("Unhandled exception, reference={}, path={}", reference, env.getExecutionStepInfo().getPath(), ex);
         return GraphqlErrorBuilder.newError(env)
@@ -118,9 +114,10 @@ public class GlobalExceptionHandler {
 
 One method per exception type, each mapping to a `GraphQLError`. The important ideas:
 
-- **`errorType`** sets the error's `classification`, GraphQL's equivalent of an HTTP status. `NOT_FOUND`, `BAD_REQUEST`, `FORBIDDEN`, and `INTERNAL_ERROR` let clients branch on the kind of failure without parsing messages. (`handleAccessDenied` is what produced the clean `FORBIDDEN` we saw in class 4.)
+- **`errorType`** sets the error's `classification`, GraphQL's equivalent of an HTTP status. `NOT_FOUND`, `BAD_REQUEST`, `UNAUTHORIZED`, `FORBIDDEN`, and `INTERNAL_ERROR` let clients branch on the kind of failure without parsing messages.
 - **`extensions`** attach structured, machine-readable detail: the `entityType` that was missing, the `field` that was invalid. Clients read these instead of scraping the message string.
 - **The catch-all** `handleUnhandled` is the safety net. Any exception without a specific handler still becomes a clean `INTERNAL_ERROR`, but the real cause is logged against a random `reference` id that is also returned to the client. Support can find the exact stack trace from the reference without ever exposing internals.
+- **The catch-all is polite about security.** The clean `UNAUTHORIZED` and `FORBIDDEN` errors from class 4 come from a resolver Spring Boot registers for security exceptions — but handler methods in this advice run *first*, so a catch-all for `Exception` would consume `AccessDeniedException` before that resolver ever sees it, and every denied request would come back as a meaningless `INTERNAL_ERROR`. The two-line guard steps aside instead: a handler that returns `null` leaves the exception unresolved, and the chain moves on to the next resolver. That is the contract, not a trick — declare what you handle, and yield what you do not.
 
 Restart and run the same query:
 
