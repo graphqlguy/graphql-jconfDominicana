@@ -207,6 +207,6 @@ The suite tests that an admin can create a movie. Add the tests that make author
 <details>
 <summary>Hint</summary>
 
-For the negative cases, assert on `.errors()`: an unauthenticated or unauthorized mutation returns an error whose classification is `UNAUTHORIZED`/`FORBIDDEN`. Use the base `graphQlTester` (no token) for case 1, `loggedInAs("user", "user123")` for cases 2 and 3, and for the ownership case create a review as one user and attempt to delete it as another.
+For the negative cases, assert on `.errors()`: an unauthenticated mutation returns an error classified `UNAUTHORIZED`, an unauthorized one `FORBIDDEN`. Use the base `graphQlTester` (no token) for case 1 and `loggedInAs("user", "user123")` for cases 2 and 3. For the ownership case, create a review as one user and attempt to delete it as another — and note that the only other seeded account is the admin, who *is* allowed, so `register` a fresh user for the foreign-delete attempt.
 
 </details>
