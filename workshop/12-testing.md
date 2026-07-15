@@ -107,7 +107,8 @@ void createMovie_releaseYearOutOfRange_isRejectedBySchemaValidation() {
 }
 ```
 
-> **TIP:** if a `.path(...)` assertion fails with a confusing message, the request probably returned an error you are not expecting. Add `.errors().verify()` (which asserts there are none) before the path, and the real GraphQL error surfaces.
+> [!TIP]
+> if a `.path(...)` assertion fails with a confusing message, the request probably returned an error you are not expecting. Add `.errors().verify()` (which asserts there are none) before the path, and the real GraphQL error surfaces.
 
 ## 6. Testing a subscription
 
