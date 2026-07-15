@@ -55,13 +55,23 @@ export default function PersonDetailPage() {
 
   const handleDelete = async () => {
     if (!confirm('Delete this person?')) return;
+    // Same cleanup as deleting a movie: refetch the list and evict the cached
+    // entity, so the people page never shows the deleted person from cache.
+    const cleanup = {
+      // by operation name: refetches the people page's active query, whatever its variables
+      refetchQueries: ['GetPeople'],
+      update(cache) {
+        cache.evict({ id: cache.identify({ __typename: 'Person', id }) });
+        cache.gc();
+      },
+    };
     try {
-      const { data: res } = await deletePerson({ variables: { id, force: false } });
+      const { data: res } = await deletePerson({ variables: { id, force: false }, ...cleanup });
       let result = res.deletePerson;
       if (!result.success && result.error) {
         const linked = result.error === 'LINKED_TO_MOVIE' ? 'movies' : 'TV shows';
         if (!confirm(`This person is linked to ${linked}. Delete anyway and unlink all credits?`)) return;
-        const { data: forced } = await deletePerson({ variables: { id, force: true } });
+        const { data: forced } = await deletePerson({ variables: { id, force: true }, ...cleanup });
         result = forced.deletePerson;
       }
       if (result.success) navigate('/people');
