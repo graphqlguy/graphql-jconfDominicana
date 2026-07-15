@@ -7,7 +7,7 @@
 
 Companion repository for the hands-on workshop at **[JConf Dominicana](https://jconfdominicana.org)**, presented by **Željko Kozina**.
 
-> In this hands-on workshop, you'll go from an empty project to a deployed, production-grade GraphQL API - no prior GraphQL experience required. Basic Spring Boot knowledge is desired. Starting with schema design fundamentals, we'll incrementally build a fully functional API using Spring for GraphQL. Each module builds on the last: defining your schema and first resolvers; modelling relationships and solving the N+1 problem with DataLoaders; adding field-level authentication and input validation; and writing integration tests with GraphQL-specific assertions. By the end, you'll have a running service you built yourself, a clear understanding of GraphQL's core concepts, and - just as importantly - the judgment to know when GraphQL is the right choice and when it isn't. Bring your laptop and your curiosity.
+> In this hands-on workshop, you'll go from an empty project to a deployed, production-grade GraphQL API - no prior GraphQL experience required. Basic Spring Boot knowledge is desired. Starting with schema design fundamentals, we'll incrementally build a fully functional API using Spring for GraphQL. Each module builds on the last: defining your schema and first resolvers; modelling relationships and solving the N+1 problem with DataLoaders; adding field-level authorization and input validation; and writing integration tests with GraphQL-specific assertions. By the end, you'll have a running service you built yourself, a clear understanding of GraphQL's core concepts, and - just as importantly - the judgment to know when GraphQL is the right choice and when it isn't. Bring your laptop and your curiosity.
 
 The application we build is **MovieDB**: a movie and TV database with people, reviews, and search. The Spring Boot scaffolding (JPA entities, seed data, services) and the React frontend are already in place; the GraphQL API is what we add, live, over the course of the workshop.
 
@@ -25,7 +25,7 @@ Topics include:
 8. The N+1 problem & `@BatchMapping` - batch loading with DataLoaders
 9. Testing - integration tests with GraphQL-specific assertions
 10. Subscriptions - real-time notifications over WebSocket
-11. Pagination & filtering - offset and cursor-based pagination
+11. Pagination & filtering - offset and pagination
 12. Union types & custom scalars - cross-type search and scalar registration
 13. External APIs, directives & production - REST/GraphQL API integration, validation directives, instrumentation, production config
 
