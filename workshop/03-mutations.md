@@ -1,5 +1,7 @@
 # Class 3: Mutations
 
+> **User story** · As the product owner, I want my team to be able to add, correct, and remove titles themselves, so that the catalogue stays accurate without a developer on call.
+
 So far our API only reads. Time to change data. In GraphQL, every write goes through a **mutation**: the counterpart of REST's POST, PUT, and DELETE, except that all mutations travel through the same `/graphql` endpoint, and the operation type declares the intent.
 
 Two things are worth understanding before we write one:

@@ -1,5 +1,7 @@
 # Class 11: Production Strengthening
 
+> **User story** · As the product owner, I want the platform to withstand abuse and expose what is slow or failing, so that we can run it for real traffic with confidence.
+
 The API is feature complete. This class is about the things a GraphQL service needs before it faces real traffic: a guard against abusive queries, visibility into what is slow, a way to correlate a response back to its request, and the browser-facing configuration that lets the frontend talk to it. None of this changes the schema; it hardens what is already there.
 
 By the end of this class, you will:
