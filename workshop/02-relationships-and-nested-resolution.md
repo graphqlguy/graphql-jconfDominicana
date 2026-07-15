@@ -326,3 +326,13 @@ Map<Person, List<MovieCast>> movieCastCredits(List<Person> people) {
 ```
 
 </details>
+
+## Recap
+
+- Relationships resolve through the default resolver whenever the parent object has the matching getter; custom code is only needed when it does not.
+- `@SchemaMapping` binds a resolver to one field of one type: the method name is the field, the parameter is the parent.
+- N+1 is GraphQL's classic performance trap: one query for the list, then one more per element. Make it visible before you fix it.
+- `@BatchMapping` collects every parent in the current query and resolves the field in a single call; the schema does not change and clients notice nothing but the speed.
+- A junction entity (`MovieCast`) models a relationship that carries data of its own, exposed as a type you can navigate through.
+
+Next up: reading is only half an API. Mutations let clients change data, and bring design questions of their own.
