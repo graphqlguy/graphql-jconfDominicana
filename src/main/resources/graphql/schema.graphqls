@@ -13,7 +13,7 @@ type Query {
 
 """
     Custom Movie type
-    All movie details are taken from the The Movie Database (TMDB)
+    All movie details are taken from The Movie Database (TMDB)
     Triple quotes allow multiline documentation.
 """
 # We will expand the Movie type as we progress through the tutorial
